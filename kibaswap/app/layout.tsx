@@ -3,22 +3,25 @@ import { poppins } from "@/fonts/font";
 import "./globals.css";
 
 import { ThemeProvider } from "@/providers/theme-provider";
+import { WalletProviders } from "@/providers/wallet-provider";
+
+import "@rainbow-me/rainbowkit/styles.css";
 
 export const metadata: Metadata = {
-  title: "Kibaswap - A multichin web3 dex.",
+  title: "Kibaswap - A multichain web3 dex.",
   description:
     "Trade, earn, and own your crypto on the all-in-one multichain DEX",
   keywords: "web3, dapp, dex, exchange, decentralized",
   openGraph: {
     url: "/",
-    title: "Kibaswap - A multichin web3 dex.",
+    title: "Kibaswap - A multichain web3 dex.",
     description:
       "Trade, earn, and own your crypto on the all-in-one multichain DEX",
     type: "website",
   },
   twitter: {
     card: "summary_large_image", // TODO image to be added later
-    title: "Kibaswap - A multichin web3 dex.",
+    title: "Kibaswap - A multichain web3 dex.",
     description:
       "Trade, earn, and own your crypto on the all-in-one multichain DEX",
   },
@@ -38,7 +41,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <WalletProviders>{children}</WalletProviders>
         </ThemeProvider>
       </body>
     </html>
