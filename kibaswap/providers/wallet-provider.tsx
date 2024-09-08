@@ -23,7 +23,7 @@ export function WalletProviders({ children }: { children: React.ReactNode }) {
         {/* Customizing the dark theme for RainbowKit */}
         <RainbowKitProvider
           theme={darkTheme({
-            accentColor: "#7b3fe4",
+            accentColor: "#E33319",
             accentColorForeground: "white",
             borderRadius: "small",
             fontStack: "system",
