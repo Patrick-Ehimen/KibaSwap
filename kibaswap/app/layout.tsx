@@ -4,6 +4,9 @@ import "./globals.css";
 
 import { ThemeProvider } from "@/providers/theme-provider";
 import { WalletProviders } from "@/providers/wallet-provider";
+import { NextProvidersUi } from "@/providers/next-ui-provider";
+
+import Navbarr from "@/components/ux/navbar";
 
 import "@rainbow-me/rainbowkit/styles.css";
 
@@ -41,7 +44,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <WalletProviders>{children}</WalletProviders>
+          <NextProvidersUi>
+            <WalletProviders>
+              <Navbarr />
+              {children}
+            </WalletProviders>
+          </NextProvidersUi>
         </ThemeProvider>
       </body>
     </html>
