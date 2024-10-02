@@ -9,9 +9,6 @@ import {
   polygon,
   bsc,
   avalanche,
-  celo,
-  blast,
-  zksync,
   sepolia,
 } from "wagmi/chains";
 // Importing various wallet options from RainbowKit
@@ -59,9 +56,6 @@ export const config = getDefaultConfig({
     base,
     bsc,
     avalanche,
-    celo,
-    blast,
-    zksync,
     // Conditionally adding Sepolia network if testnets are enabled
     ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === "true" ? [sepolia] : []),
   ],
