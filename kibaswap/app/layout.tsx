@@ -6,7 +6,7 @@ import { ThemeProvider } from "@/providers/theme-provider";
 import { WalletProviders } from "@/providers/wallet-provider";
 import { NextProvidersUi } from "@/providers/next-ui-provider";
 
-import Navbarr from "@/components/ux/navbar";
+import Navbarr from "@/components/_components/navbar";
 
 import "@rainbow-me/rainbowkit/styles.css";
 
