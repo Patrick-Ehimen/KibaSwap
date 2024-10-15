@@ -77,7 +77,7 @@ export default function TokenSelect({
       <DialogTrigger asChild>
         <Button
           variant="outline"
-          className="flex items-center space-x-2 ml-2"
+          className="flex items-center space-x-2 ml-2 hover:bg-gray-800"
           onClick={() => setOpen(true)}
         >
           <Image
