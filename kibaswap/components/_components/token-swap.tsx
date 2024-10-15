@@ -78,6 +78,7 @@ export default function TokenSwap() {
               darkMode ? "bg-[#23242F] text-white" : "bg-gray-100 text-gray-900"
             } outline-none`}
             placeholder="0.0"
+            readOnly
           />
           <TokenSelect
             selectedToken={toToken}
