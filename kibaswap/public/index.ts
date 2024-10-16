@@ -7,6 +7,14 @@ import Pool from "./assets/svgs/pool.svg";
 import ArrowLeftRight from "./assets/svgs/arrow-left-right.svg";
 import Position from "./assets/svgs/position.svg";
 import AddPosition from "./assets/svgs/add-position.svg";
+import ChainImg from "./assets/chain-img.png";
+import Ethereum from "./assets/Ethereum.svg";
+import Avalance from "./assets/Avalance.svg";
+import Arbitrum from "./assets/arbitrum.svg";
+import Optimism from "./assets/Optimism.svg";
+import Polygon from "./assets/Polygon.svg";
+import BSC from "./assets/BinanceSmartChain.svg";
+import Base from "./assets/Base.svg";
 
 export {
   Logo,
@@ -18,4 +26,12 @@ export {
   ArrowLeftRight,
   Position,
   AddPosition,
+  ChainImg,
+  Ethereum,
+  Avalance,
+  Arbitrum,
+  Optimism,
+  Polygon,
+  BSC,
+  Base,
 };
