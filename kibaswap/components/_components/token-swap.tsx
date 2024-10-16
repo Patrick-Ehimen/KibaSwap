@@ -92,8 +92,6 @@ export default function TokenSwap() {
             value={fromAmount}
             onChange={(e) => {
               setFromAmount(e.target.value);
-              // Remove this line as we're now using the useEffect to fetch price
-              // fetchPrice(e.target.value);
             }}
             className={`w-full text-2xl ${
               darkMode ? "bg-[#23242F] text-white" : "bg-gray-100 text-gray-900"
