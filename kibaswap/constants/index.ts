@@ -8,7 +8,17 @@ import {
   ArrowLeftRight,
   Position,
   AddPosition,
+  Ethereum,
+  Avalance,
+  Arbitrum,
+  Optimism,
+  Polygon,
+  BSC,
+  Base,
+  ChainImg,
 } from "@/public";
+
+import { Network } from "@/interfaces";
 
 export const menuItems = [
   {
@@ -71,5 +81,37 @@ export const menuItems = [
         link: "/add",
       },
     ],
+  },
+];
+
+export const networks: Network[] = [
+  {
+    name: "All Networks",
+    icon: ChainImg,
+  },
+  {
+    name: "Ethereum",
+    icon: Ethereum,
+  },
+  {
+    name: "Arbitrum",
+    icon: Arbitrum,
+  },
+  {
+    name: "Optimism",
+    icon: Optimism,
+  },
+  {
+    name: "Polygon",
+    icon: Polygon,
+  },
+  { name: "Base", icon: Base },
+  {
+    name: "BNB Chain",
+    icon: BSC,
+  },
+  {
+    name: "Avalanche",
+    icon: Avalance,
   },
 ];
