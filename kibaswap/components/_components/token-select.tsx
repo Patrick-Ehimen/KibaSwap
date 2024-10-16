@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import { useState, useRef } from "react";
+
 import { ChevronDownIcon, SearchIcon, StarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,20 +13,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useState, useRef } from "react";
-
-interface Token {
-  symbol: string;
-  name: string;
-  logo: string;
-  pinned?: boolean;
-}
-
-interface TokenSelectProps {
-  selectedToken: Token;
-  onSelectToken: (token: Token) => void;
-  tokens: Token[];
-}
+import { Token, TokenSelectProps } from "@/interfaces";
+import NetworkSelector from "../network-selector";
 
 export default function TokenSelect({
   selectedToken,
@@ -48,7 +38,7 @@ export default function TokenSelect({
     <Button
       key={token.symbol}
       variant="ghost"
-      className="w-full justify-start"
+      className="w-full justify-start hover:bg-[#353546] transition-colors duration-200"
       onClick={() => {
         onSelectToken(token);
         setSearchQuery("");
@@ -77,7 +67,7 @@ export default function TokenSelect({
       <DialogTrigger asChild>
         <Button
           variant="outline"
-          className="flex items-center space-x-2 ml-2 hover:bg-gray-800"
+          className="flex items-center space-x-2 ml-2 hover:bg-[#353546]"
           onClick={() => setOpen(true)}
         >
           <Image
@@ -103,6 +93,7 @@ export default function TokenSelect({
             onChange={(e) => setSearchQuery(e.target.value)}
             className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
           />
+          <NetworkSelector />
         </div>
         <div className="space-y-2 max-h-[300px] overflow-y-auto">
           {pinnedTokens.length > 0 && (
