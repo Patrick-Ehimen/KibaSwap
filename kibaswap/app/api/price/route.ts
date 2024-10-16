@@ -1,3 +1,4 @@
+import { NextResponse } from "next/server";
 import { type NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -9,7 +10,7 @@ export async function GET(request: NextRequest) {
       {
         headers: {
           "0x-api-key": process.env.NEXT_PUBLIC_OX_API_KEY as string,
-          // "0x-chain-id": searchParams.get("chainId") as string,
+          "0x-version": "v2",
         },
       }
     );
@@ -22,8 +23,12 @@ export async function GET(request: NextRequest) {
 
     console.log("price data", data);
 
-    return Response.json(data);
+    return NextResponse.json(data);
   } catch (error) {
-    console.log(error);
+    console.error("Error fetching price data:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch price data" },
+      { status: 500 }
+    );
   }
 }
