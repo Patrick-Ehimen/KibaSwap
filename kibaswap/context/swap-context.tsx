@@ -2,22 +2,14 @@
 
 import React, { createContext, useState, useContext, ReactNode } from "react";
 
-interface SwapContextType {
-  fromAmount: string;
-  setFromAmount: (amount: string) => void;
-  fromTokenAddress: string;
-  fromTokenChainId: number;
-  toTokenAddress: string;
-  toTokenChainId: number;
-  setFromToken: (address: string, chainId: number) => void;
-  setToToken: (address: string, chainId: number) => void;
-}
+import { SwapContextType } from "@/interfaces";
 
 const SwapContext = createContext<SwapContextType | undefined>(undefined);
 
 export const SwapProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
+  console.log("SwapProvider rendering");
   const [fromAmount, setFromAmount] = useState("");
   const [fromTokenAddress, setFromTokenAddress] = useState("");
   const [fromTokenChainId, setFromTokenChainId] = useState(0);
@@ -60,8 +52,10 @@ export const SwapProvider: React.FC<{ children: ReactNode }> = ({
 };
 
 export const useSwapContext = () => {
+  console.log("useSwapContext called");
   const context = useContext(SwapContext);
   if (context === undefined) {
+    console.error("useSwapContext must be used within a SwapProvider");
     throw new Error("useSwapContext must be used within a SwapProvider");
   }
   return context;
