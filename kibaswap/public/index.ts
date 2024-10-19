@@ -15,6 +15,8 @@ import Optimism from "./assets/Optimism.svg";
 import Polygon from "./assets/Polygon.svg";
 import BSC from "./assets/BinanceSmartChain.svg";
 import Base from "./assets/Base.svg";
+import Etherscan from "./assets/etherscan.svg";
+import X from "./assets/x.svg";
 
 export {
   Logo,
@@ -34,4 +36,6 @@ export {
   Polygon,
   BSC,
   Base,
+  Etherscan,
+  X,
 };
