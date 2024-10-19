@@ -15,3 +15,14 @@ export interface TokenSelectProps {
   onSelectToken: (token: Token) => void;
   tokens: Token[];
 }
+
+export interface SwapContextType {
+  fromAmount: string;
+  setFromAmount: (amount: string) => void;
+  fromTokenAddress: string;
+  fromTokenChainId: number;
+  toTokenAddress: string;
+  toTokenChainId: number;
+  setFromToken: (address: string, chainId: number) => void;
+  setToToken: (address: string, chainId: number) => void;
+}
