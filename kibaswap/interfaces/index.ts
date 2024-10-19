@@ -26,3 +26,16 @@ export interface SwapContextType {
   setFromToken: (address: string, chainId: number) => void;
   setToToken: (address: string, chainId: number) => void;
 }
+
+export interface TokenInfoProps {
+  token:
+    | {
+        logo: string;
+        symbol: string;
+        name: string;
+        explorer: string;
+        website: string;
+        twitter: string;
+      }
+    | undefined;
+}
