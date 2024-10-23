@@ -39,3 +39,7 @@ export interface TokenInfoProps {
       }
     | undefined;
 }
+
+export interface DailyChartProps {
+  token: string; 
+}

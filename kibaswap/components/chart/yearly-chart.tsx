@@ -44,7 +44,7 @@ const chartConfig: ChartConfig = {
   },
 };
 
-export default function DailyChart({ token }: DailyChartProps) {
+export default function YearlyChart({ token }: DailyChartProps) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -75,7 +75,7 @@ export default function DailyChart({ token }: DailyChartProps) {
                 name
                 decimals
                 poolCount
-                tokenDayData(first: 7, orderDirection: desc, orderBy: date) {
+                tokenDayData(first: 365, orderDirection: desc, orderBy: date) {
                   priceUSD
                   date
                 }
