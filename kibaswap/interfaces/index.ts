@@ -41,5 +41,5 @@ export interface TokenInfoProps {
 }
 
 export interface DailyChartProps {
-  token: string; 
+  token: string;
 }
