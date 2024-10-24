@@ -10,14 +10,7 @@ import {
   YAxis,
   ResponsiveContainer,
 } from "recharts";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   ChartConfig,
   ChartContainer,
@@ -25,6 +18,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ArrowDownUpIcon } from "lucide-react";
 
 import { createClient, gql } from "urql";
 import { cacheExchange, fetchExchange } from "@urql/core";
@@ -48,6 +42,7 @@ export default function DailyChart({ token }: DailyChartProps) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [showDerivedETH, setShowDerivedETH] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -75,6 +70,7 @@ export default function DailyChart({ token }: DailyChartProps) {
                 name
                 decimals
                 poolCount
+                derivedETH
                 tokenDayData(first: 7, orderDirection: desc, orderBy: date) {
                   priceUSD
                   date
@@ -117,14 +113,31 @@ export default function DailyChart({ token }: DailyChartProps) {
     <main className="grid grid-cols-3 gap-8 -mt-2 mb-5">
       <Card className="col-span-2 bg-transparent border-none shadow-none">
         <CardHeader>
-          <div className="text-3xl -ml-5 -mt-5 font-bold mb-2">
+          <div className="text-3xl -ml-5 -mt-5 flex font-bold mb-2">
             {loading ? ( // Check if loading
               <Skeleton className="h-6 w-32" /> // Render skeleton component
             ) : (
               processedData.length > 0 && (
-                <p>${numeral(processedData[0].price).format("0,0.00")}</p>
+                <p className="cursor-text mr-2">
+                  {" "}
+                  {/* Toggle between price and derivedETH */}
+                  {showDerivedETH ? ( // Conditional rendering based on state
+                    <span>
+                      {numeral(data.token.derivedETH).format("0,0.0000")} ETH
+                    </span> // Show derivedETH
+                  ) : (
+                    `$${numeral(
+                      processedData[processedData.length - 1].price
+                    ).format("0,0.00")}` // Show price
+                  )}
+                </p>
               )
             )}
+            <ArrowDownUpIcon
+              onClick={() => setShowDerivedETH(!showDerivedETH)}
+              color="#e33319"
+              className="cursor-pointer"
+            />
           </div>
         </CardHeader>
 
