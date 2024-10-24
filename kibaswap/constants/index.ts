@@ -16,7 +16,10 @@ import {
   BSC,
   Base,
   ChainImg,
+  Staking,
+  Delegates,
 } from "@/public";
+import { Sprout } from "lucide-react";
 
 import { Network } from "@/interfaces";
 
@@ -45,6 +48,23 @@ export const menuItems = [
   },
   {
     id: 2,
+    title: "DAO",
+    link: "/",
+    hoverContents: [
+      {
+        avatarSrc: Staking,
+        description: "Staking",
+        link: "/dao",
+      },
+      {
+        avatarSrc: Delegates,
+        description: "Delegate",
+        link: "/dao/delegate",
+      },
+    ],
+  },
+  {
+    id: 3,
     title: "Explore",
     link: "/explore",
     hoverContents: [
@@ -66,7 +86,7 @@ export const menuItems = [
     ],
   },
   {
-    id: 3,
+    id: 4,
     title: "Pool",
     link: "/pool",
     hoverContents: [
