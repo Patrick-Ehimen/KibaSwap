@@ -30,7 +30,8 @@ export const SwapProvider: React.FC<{ children: ReactNode }> = ({
   const setToTokenWithLog = (address: string, chainId: number) => {
     setToTokenAddress(address);
     setToTokenChainId(chainId);
-    console.log("To Token updated:", { address, chainId });
+
+    console.log("To Token updated:", { address, chainId, name });
   };
 
   return (

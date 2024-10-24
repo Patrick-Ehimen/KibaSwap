@@ -7,10 +7,12 @@ import { ArrowDownUp } from "lucide-react";
 
 import TokenSelect from "./token-select";
 import { useSwapContext } from "@/context/swap-context";
+import { useTokenNameContext } from "@/context/token-name-context";
 
 export default function TokenSwap() {
   const { fromAmount, setFromAmount, setFromToken, setToToken } =
     useSwapContext();
+  const { setSecondTokenName } = useTokenNameContext();
 
   const [fromTokenState, setFromTokenState] = useState(tokenLists[0]);
   const [toTokenState, setToTokenState] = useState(tokenLists[1]);
@@ -20,6 +22,7 @@ export default function TokenSwap() {
     // Set initial tokens in context
     setFromToken(fromTokenState.address, fromTokenState.chainId);
     setToToken(toTokenState.address, toTokenState.chainId);
+    setSecondTokenName(toTokenState.name);
   }, []);
 
   useEffect(() => {
@@ -72,6 +75,7 @@ export default function TokenSwap() {
   const handleToTokenSelect = (token: typeof toTokenState) => {
     setToTokenState(token);
     setToToken(token.address, token.chainId);
+    setSecondTokenName(token.name);
   };
 
   const darkMode = true;
