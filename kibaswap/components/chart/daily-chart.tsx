@@ -18,7 +18,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowDownUpIcon } from "lucide-react";
+import { Repeat } from "lucide-react";
 
 import { createClient, gql } from "urql";
 import { cacheExchange, fetchExchange } from "@urql/core";
@@ -133,7 +133,7 @@ export default function DailyChart({ token }: DailyChartProps) {
                 </p>
               )
             )}
-            <ArrowDownUpIcon
+            <Repeat
               onClick={() => setShowDerivedETH(!showDerivedETH)}
               color="#e33319"
               className="cursor-pointer"
