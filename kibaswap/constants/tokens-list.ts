@@ -141,7 +141,7 @@ export const tokenLists = [
   {
     chainId: 1,
     symbol: "LDO",
-    name: "Lido DAO Token",
+    name: "Lido DAO",
     logo: "https://cryptologos.cc/logos/lido-dao-ldo-logo.png?v=035",
     address: "0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32",
     explorer:
