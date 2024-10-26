@@ -14,10 +14,11 @@ import {
   FileText,
 } from "lucide-react";
 import { useTokenNameContext } from "@/context/token-name-context";
+import { TokenData } from "@/interfaces";
 
 export default function TokenDetails() {
   const { secondTokenName } = useTokenNameContext();
-  const [tokenData, setTokenData] = useState(null);
+  const [tokenData, setTokenData] = useState<TokenData | null>(null);
   const [showMore, setShowMore] = useState(false);
 
   console.log("selected toke id::", secondTokenName);
@@ -99,9 +100,12 @@ export default function TokenDetails() {
           <p>
             {tokenData ? (
               showMore ? (
-                tokenData.description.en || "No description available."
+                tokenData.description?.en || "No description available."
               ) : (
-                `${tokenData.description.en.substring(0, 200)}...` // Shortened version
+                `${
+                  tokenData.description?.en?.substring(0, 200) ||
+                  "No description available."
+                }...` // Shortened version
               )
             ) : (
               <div className="flex flex-col space-y-3">
