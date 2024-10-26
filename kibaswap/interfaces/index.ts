@@ -43,3 +43,28 @@ export interface TokenInfoProps {
 export interface DailyChartProps {
   token: string;
 }
+
+export interface TokenData {
+  market_data?: {
+    market_cap?: {
+      usd?: number;
+    };
+    circulating_supply?: number;
+  };
+  market_cap_rank?: number;
+  description?: {
+    en?: string;
+  };
+}
+
+export interface Token {
+  chainId: number;
+  symbol: string;
+  name: string;
+  logo: string;
+  pinned: "boolean | undefined";
+  address: string;
+  explorer: string;
+  website: string;
+  twitter: string;
+}
