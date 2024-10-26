@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 
-import { tokenLists } from "@/constants/tokens-list";
 import { ArrowDownUp } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
+import { tokenLists } from "@/constants/tokens-list";
 import TokenSelect from "./token-select";
 import { useSwapContext } from "@/context/swap-context";
 import { useTokenNameContext } from "@/context/token-name-context";
@@ -17,6 +18,7 @@ export default function TokenSwap() {
   const [fromTokenState, setFromTokenState] = useState(tokenLists[0]);
   const [toTokenState, setToTokenState] = useState(tokenLists[1]);
   const [toAmount, setToAmount] = useState("");
+  const [isFetching, setIsFetching] = useState(false);
 
   useEffect(() => {
     // Set initial tokens in context
@@ -28,6 +30,7 @@ export default function TokenSwap() {
   useEffect(() => {
     const fetchPrice = async () => {
       if (fromAmount && fromTokenState && toTokenState) {
+        setIsFetching(true);
         const amountInWei = BigInt(parseFloat(fromAmount) * 1e18).toString();
         const params = new URLSearchParams({
           sellToken: fromTokenState.address,
@@ -42,15 +45,20 @@ export default function TokenSwap() {
           console.log("Price data:", data);
 
           // Update the toAmount with the buyAmount from the API response
-          if (data.buyAmount) {
+          if (data.price) {
             // Convert the buyAmount to a human-readable format
-            const buyAmountInTokens = (parseInt(data.buyAmount) / 1e6).toFixed(
-              6
-            );
+            const priceParts = data.price.split(".");
+            const buyAmountInTokens =
+              priceParts.length > 1 && priceParts[1].length > 6
+                ? parseFloat(data.price).toFixed(6)
+                : parseFloat(data.price).toFixed(2);
+
             setToAmount(buyAmountInTokens);
           }
         } catch (error) {
           console.error("Error fetching price:", error);
+        } finally {
+          setIsFetching(false);
         }
       }
     };
@@ -130,15 +138,21 @@ export default function TokenSwap() {
           <span>To</span>
         </div>
         <div className="flex items-center">
-          <input
-            type="number"
-            value={toAmount}
-            className={`w-full text-2xl ${
-              darkMode ? "bg-[#23242F] text-white" : "bg-gray-100 text-gray-900"
-            } outline-none`}
-            placeholder="0.0"
-            readOnly
-          />
+          {isFetching ? ( // Conditional rendering of Skeleton
+            <Skeleton className="w-full h-6" />
+          ) : (
+            <input
+              type="number"
+              value={toAmount}
+              className={`w-full text-2xl ${
+                darkMode
+                  ? "bg-[#23242F] text-white"
+                  : "bg-gray-100 text-gray-900"
+              } outline-none`}
+              placeholder="0.0"
+              readOnly
+            />
+          )}
           <TokenSelect
             selectedToken={toTokenState}
             onSelectToken={handleToTokenSelect}
