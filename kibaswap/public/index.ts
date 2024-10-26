@@ -17,6 +17,8 @@ import BSC from "./assets/BinanceSmartChain.svg";
 import Base from "./assets/Base.svg";
 import Etherscan from "./assets/etherscan.svg";
 import X from "./assets/x.svg";
+import Staking from "./assets/Staking.svg";
+import Delegates from "./assets/Delegates.svg";
 
 export {
   Logo,
@@ -38,4 +40,6 @@ export {
   Base,
   Etherscan,
   X,
+  Staking,
+  Delegates,
 };
