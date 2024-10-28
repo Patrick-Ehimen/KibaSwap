@@ -37,7 +37,7 @@ export default function Send() {
               $
             </span>
             <input
-              type="text"
+              type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               className="text-gray-500 text-7xl font-light bg-transparent border-none focus:outline-none text-center w-full pl-12"

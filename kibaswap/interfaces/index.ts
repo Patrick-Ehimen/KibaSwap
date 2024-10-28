@@ -10,6 +10,18 @@ export interface Token {
   pinned?: boolean;
 }
 
+export interface Token {
+  chainId: number;
+  symbol: string;
+  name: string;
+  logo: string;
+  pinned?: boolean;
+  address: string;
+  explorer: string;
+  website: string;
+  twitter: string;
+}
+
 export interface TokenSelectProps {
   selectedToken: Token;
   onSelectToken: (token: Token) => void;
@@ -55,16 +67,4 @@ export interface TokenData {
   description?: {
     en?: string;
   };
-}
-
-export interface Token {
-  chainId: number;
-  symbol: string;
-  name: string;
-  logo: string;
-  pinned: "boolean | undefined";
-  address: string;
-  explorer: string;
-  website: string;
-  twitter: string;
 }

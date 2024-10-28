@@ -16,10 +16,7 @@ import {
   BSC,
   Base,
   ChainImg,
-  Staking,
-  Delegates,
 } from "@/public";
-import { Sprout } from "lucide-react";
 
 import { Network } from "@/interfaces";
 
@@ -48,18 +45,18 @@ export const menuItems = [
   },
   {
     id: 2,
-    title: "DAO",
-    link: "/",
+    title: "NFT",
+    link: "/stake-nft",
     hoverContents: [
       {
-        avatarSrc: Staking,
-        description: "Staking",
-        link: "/dao",
+        avatarSrc: Position,
+        description: "Stake NFT",
+        link: "/stake-nft",
       },
       {
-        avatarSrc: Delegates,
-        description: "Delegate",
-        link: "/dao/delegate",
+        avatarSrc: AddPosition,
+        description: "Mint NFT",
+        link: "/nft/mint-nft",
       },
     ],
   },
@@ -82,23 +79,6 @@ export const menuItems = [
         avatarSrc: ArrowLeftRight,
         description: "Transactions",
         link: "/explore/transactions",
-      },
-    ],
-  },
-  {
-    id: 4,
-    title: "Pool",
-    link: "/pool",
-    hoverContents: [
-      {
-        avatarSrc: Position,
-        description: "View Position",
-        link: "/pool",
-      },
-      {
-        avatarSrc: AddPosition,
-        description: "Create Position",
-        link: "/add",
       },
     ],
   },
