@@ -78,6 +78,28 @@
   }
 }
 
+.curve-line {
+  /* position: absolute; */
+  width: 200%;
+  height: 100%;
+  left: -50%;
+  border-radius: 50%;
+  border: 2px solid rgba(59, 130, 246, 0.3);
+  border-top-color: transparent;
+  border-left-color: transparent;
+  border-right-color: transparent;
+  animation: wave 5s ease-in-out infinite alternate;
+}
+
+@keyframes wave {
+  0% {
+    transform: rotate(5deg);
+  }
+  100% {
+    transform: rotate(-5deg);
+  }
+}
+
 @layer base {
   * {
     @apply border-border;

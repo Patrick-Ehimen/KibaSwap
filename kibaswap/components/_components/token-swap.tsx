@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 
+import { useAccount } from "wagmi";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+
 import { ArrowDownUp } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -19,6 +22,8 @@ export default function TokenSwap() {
   const [toTokenState, setToTokenState] = useState(tokenLists[1]);
   const [toAmount, setToAmount] = useState("");
   const [isFetching, setIsFetching] = useState(false);
+
+  const { isConnected, address } = useAccount();
 
   useEffect(() => {
     // Set initial tokens in context
@@ -160,13 +165,28 @@ export default function TokenSwap() {
           />
         </div>
       </div>
-      <button
-        className={`w-full py-3 rounded-xl font-bold ${
-          darkMode ? "bg-[#E33319] text-white" : "bg-[#E33319] text-white"
-        }`}
-      >
-        Swap
-      </button>
+      {isConnected ? (
+        <button
+          className={`w-full py-2 rounded-xl font-bold ${
+            darkMode ? "bg-[#E33319] text-white" : "bg-[#E33319] text-white"
+          }`}
+        >
+          Swap
+        </button>
+      ) : (
+        <button
+          className={`w-full rounded-xl font-bold flex justify-center items-center ${
+            darkMode ? "bg-[#E33319] text-white" : "bg-[#E33319] text-white"
+          }`}
+        >
+          <ConnectButton
+            accountStatus={{
+              smallScreen: "avatar",
+              largeScreen: "full",
+            }}
+          />
+        </button>
+      )}
     </div>
   );
 }

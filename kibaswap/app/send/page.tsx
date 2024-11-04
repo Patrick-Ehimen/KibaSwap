@@ -1,18 +1,36 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
+import Moralis from "moralis";
+
+import { useAccount, useChainId } from "wagmi";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+
 import { ChevronDown } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Repeat } from "lucide-react";
-import TokenSelect from "@/components/_components/token-select";
+
+import { tokenLists } from "@/constants/tokens-list";
+import { Token } from "@/interfaces";
 
 export default function Send() {
   const [amount, setAmount] = useState("");
   const [ethAmount, setEthAmount] = useState("0");
   const [walletAddress, setWalletAddress] = useState("");
   const [displayMode, setDisplayMode] = useState<"ETH" | "USD">("ETH");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [selectedToken, setSelectedToken] = useState(tokenLists[0]);
+
+  const { isConnected, address } = useAccount();
+  const chainId = useChainId();
+
+  console.log(`Chain ID:: ${chainId}`);
+  console.log(
+    `wallet connected:: ${isConnected}, and wallet address:: ${address}`
+  );
 
   // Mock conversion rate (1 ETH = $2000 USD)
   const ETH_USD_RATE = 2000;
@@ -23,8 +41,39 @@ export default function Send() {
     setEthAmount(calculatedEth);
   }, [amount]);
 
+  // useEffect for Moralis API call
+  useEffect(() => {
+    const fetchWalletTokenBalances = async () => {
+      try {
+        await Moralis.start({
+          apiKey: process.env.NEXT_PUBLIC_MORALIS_API_KEY as string,
+        });
+
+        const response =
+          await Moralis.EvmApi.wallets.getWalletTokenBalancesPrice({
+            chain: chainId.toString(), // Use chainId from state
+            address: address || "", // Use address from state
+          });
+
+        console.log("moralis response::", await response.result);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    if (isConnected && address) {
+      // Ensure the wallet is connected and address is available
+      fetchWalletTokenBalances();
+    }
+  }, [chainId, address, isConnected]); // Dependencies for the useEffect
+
   const handleToggleDisplay = () => {
     setDisplayMode((prevMode) => (prevMode === "ETH" ? "USD" : "ETH")); // Toggle between ETH and USD
+  };
+
+  const handleTokenSelect = (token: Token) => {
+    setSelectedToken(token); // Update selected token
+    setIsDropdownOpen(false); // Close dropdown after selection
   };
 
   return (
@@ -47,7 +96,8 @@ export default function Send() {
           <div className="text-center mb-12">
             <span className="text-gray-500 text-xl flex items-center justify-center">
               {displayMode === "ETH" ? ethAmount : amount.toString()}{" "}
-              {displayMode} {/* Conditional rendering */}
+              {selectedToken.symbol}
+              {/* {displayMode} Conditional rendering */}
               <Repeat
                 className="ml-2 cursor-pointer"
                 onClick={handleToggleDisplay}
@@ -55,35 +105,48 @@ export default function Send() {
               {/* Added click handler */}
             </span>
           </div>
-          <div className="flex items-center justify-between bg-[#353546] border-t-1 border-[#23242F] pb-0 p-4 cursor-pointer">
+          <div
+            className="flex items-center justify-between bg-[#353546] border-t-1 border-[#23242F] pb-0 p-4 cursor-pointer"
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+          >
             <div className="flex items-center">
-              <div className="w-10 h-10 bg-[#627eea] rounded-full flex items-center justify-center mr-3">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 256 417"
-                  xmlns="http://www.w3.org/2000/svg"
-                  preserveAspectRatio="xMidYMid"
-                >
-                  <path
-                    fill="#fff"
-                    d="M127.961 0l-2.795 9.5v275.668l2.795 2.79 127.962-75.638z"
-                  />
-                  <path
-                    fill="#fff"
-                    d="M127.962 0L0 212.32l127.962 75.639V154.158z"
-                  />
-                  <path
-                    fill="#fff"
-                    d="M127.961 312.187l-1.575 1.92v98.199l1.575 4.6L256 236.587z"
-                  />
-                  <path fill="#fff" d="M127.962 416.905v-104.72L0 236.585z" />
-                </svg>
+              <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3">
+                <Image
+                  src={selectedToken.logo}
+                  alt={selectedToken.name}
+                  className="w-full h-full"
+                  width={25}
+                  height={25}
+                />{" "}
+                {/* Display selected token logo */}
               </div>
-              <span className="text-white text-lg font-medium">ETH</span>
+              <span className="text-white text-lg font-medium">
+                {selectedToken.symbol}
+              </span>{" "}
+              {/* Display selected token symbol */}
             </div>
             <ChevronDown className="text-gray-400" />
           </div>
+          {isDropdownOpen && ( // Conditional rendering of dropdown
+            <div className="absolute bg-[#23242F] w-[200px] shadow-lg rounded-lg mt-2 max-h-60 overflow-y-auto">
+              {tokenLists.map((token) => (
+                <div
+                  key={token.symbol}
+                  className="flex items-center p-2 hover:bg-[#353546] cursor-pointer"
+                  onClick={() => handleTokenSelect(token)} // Handle token selection
+                >
+                  <Image
+                    src={token.logo}
+                    alt={token.name}
+                    className="w-6 h-6 mr-2"
+                    width={25}
+                    height={25}
+                  />
+                  <span>{token.symbol}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -105,9 +168,22 @@ export default function Send() {
               className="bg-[#23242F] border-[#23242F] text-gray-300 placeholder-gray-500 rounded-lg"
             />
           </div>
-          <Button className="w-full bg-[#E33319] hover:bg-[#e35e49] text-white rounded-2xl py-6 text-lg font-semibold">
-            Connect wallet
-          </Button>
+          <div>
+            {isConnected ? (
+              <Button className="w-full bg-[#E33319] hover:bg-[#e35e49] text-white rounded-2xl py-6 text-lg font-semibold">
+                Send
+              </Button>
+            ) : (
+              <Button className="w-full bg-[#E33319] text-white rounded-2xl py-6 text-lg font-semibold">
+                <ConnectButton
+                  accountStatus={{
+                    smallScreen: "avatar",
+                    largeScreen: "full",
+                  }}
+                />
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>
