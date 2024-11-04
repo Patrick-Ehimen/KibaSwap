@@ -62,6 +62,8 @@ The `TokenDetails` component fetches and displays information about a specific t
 #### 3. Swap Interface
 
 The `SwapInterface` component allows users to swap tokens.
+![Swap Interface](/images/1.png)
+![Swap Interface](/images/2.png)
 
 ## Deployment
 
