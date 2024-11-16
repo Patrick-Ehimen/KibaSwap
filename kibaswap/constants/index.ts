@@ -3,9 +3,7 @@ import {
   ArrowDownUp,
   Send,
   Creditcard,
-  Coin,
   Pool,
-  ArrowLeftRight,
   Position,
   AddPosition,
   Ethereum,
@@ -56,7 +54,7 @@ export const menuItems = [
       {
         avatarSrc: AddPosition,
         description: "Mint NFT",
-        link: "/nft/mint-nft",
+        link: "",
       },
     ],
   },
@@ -66,19 +64,9 @@ export const menuItems = [
     link: "/explore",
     hoverContents: [
       {
-        avatarSrc: Coin,
-        description: "Tokens",
-        link: "/explore",
-      },
-      {
         avatarSrc: Pool,
-        description: "Pool",
-        link: "/explore/pools",
-      },
-      {
-        avatarSrc: ArrowLeftRight,
-        description: "Transactions",
-        link: "/explore/transactions",
+        description: "Markets",
+        link: "/explore",
       },
     ],
   },
