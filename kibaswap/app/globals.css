@@ -91,6 +91,25 @@
   animation: wave 5s ease-in-out infinite alternate;
 }
 
+.table {
+  border-color: brown;
+}
+.table-header-border {
+  background-color: brown;
+  margin-top: 5px;
+  margin-left: 5px;
+}
+
+.table-cell-positive {
+  border: 2px solid "#12BE73";
+  color: "#12BE73";
+}
+
+.table-cell-negative {
+  border: 2px solid "#FD4C42";
+  color: "#FD4C42";
+}
+
 @keyframes wave {
   0% {
     transform: rotate(5deg);
