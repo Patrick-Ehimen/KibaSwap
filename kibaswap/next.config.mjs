@@ -8,6 +8,7 @@ const nextConfig = {
       "raw.githubusercontent.com",
       "s2.coinmarketcap.com",
       "cryptologos.cc",
+      "coin-images.coingecko.com",
     ],
   },
 };
