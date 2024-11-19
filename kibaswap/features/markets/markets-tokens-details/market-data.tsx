@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { ArrowUp, Search } from "lucide-react";
+import { ArrowUp, ArrowLeft } from "lucide-react";
 
 import {
   Table,
@@ -78,6 +78,13 @@ export default function MarketData() {
   >([]); // Define the type for search results
   const [isSearching, setIsSearching] = useState(false);
 
+  const handleBack = () => {
+    setSelectedCoinId(null); // Reset selected coin ID
+    setIsSearching(false); // Reset searching state
+    setSearchQuery(""); // Clear search query
+    setSearchResults([]); // Clear search results
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -150,7 +157,7 @@ export default function MarketData() {
           {!isAtTop && (
             <div
               onClick={scrollToTop}
-              className="fixed bg-[#353546] rounded-full p-2 bottom-4 right-4"
+              className="fixed bg-[#353546] rounded-full p-2 bottom-4 right-4 z-10"
             >
               <ArrowUp color="#e33319" />
             </div>
@@ -158,7 +165,13 @@ export default function MarketData() {
           {/* Show search results only if searching */}
           {isSearching ? (
             <div>
-              <h3>Search Results:</h3>
+              <div
+                onClick={handleBack}
+                className="mb-4 cursor-pointer text-[#d15643]"
+              >
+                <ArrowLeft />
+              </div>
+              <h3 className="my-2">Search Results:</h3>
               {searchResults.length > 0 ? (
                 <Table className="rounded-lg bg-[#353546]">
                   <TableHeader className="rounded-lg table-header-border w-fit">
@@ -200,25 +213,31 @@ export default function MarketData() {
             </div>
           ) : (
             <div className="">
+              <div className="market-overview my-2">Market Overview</div>
+              <p className="my-2">
+                The first-ever aggregated on-chain price platform, offering the
+                most real-time, trade-able, and reliable price data.
+              </p>
               {/* New input field for searching */}
-              <div className="flex">
+              <div className="flex mt-3">
                 <Input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)} // Update search query state
-                  placeholder="Search for a coin..."
-                  className="border w-fit rounded p-2 mb-4"
+                  placeholder="Search by token name or symbol"
+                  className="border w-[500px] rounded p-2 mb-4"
                 />
                 <Button
+                  variant="destructive"
                   onClick={handleSearch}
-                  className="bg-[#e33339] text-white rounded-lg p-2"
+                  className="ml-2 text-white rounded-lg p-2"
                 >
                   Search
                 </Button>
               </div>
 
               <Table className="rounded-lg bg-[#353546]">
-                <TableCaption className="mt-5">
+                <TableCaption className="mb-2">
                   A list of Cryptocurrencies prices.
                 </TableCaption>
                 <TableHeader className="rounded-lg table-header-border w-fit">
@@ -289,7 +308,16 @@ export default function MarketData() {
           )}
         </>
       ) : (
-        <MarketTokensDetails id={selectedCoinId} />
+        <div>
+          <div
+            onClick={handleBack}
+            className="mb-4 cursor-pointer text-[#d15643]"
+          >
+            <ArrowLeft />
+          </div>{" "}
+          {/* Back button for MarketTokensDetails */}
+          <MarketTokensDetails id={selectedCoinId} />
+        </div>
       )}
     </main>
   );
