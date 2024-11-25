@@ -15,6 +15,19 @@ import {
   Base,
   ChainImg,
 } from "@/public";
+import {
+  Aptos,
+  Binance,
+  Cardano,
+  Celo,
+  EOS,
+  Fantom,
+  Flow,
+  Kadena,
+  Okex,
+  Polkadot,
+  Solana,
+} from "@/public/network-chains";
 
 import { Network } from "@/interfaces";
 
@@ -102,4 +115,21 @@ export const networks: Network[] = [
     name: "Avalanche",
     icon: Avalance,
   },
+];
+
+export const contractNetworks = [
+  { aptos: Aptos },
+  { ethereum: Ethereum },
+  { arbitrum: Arbitrum },
+  { avalance: Avalance },
+  { binance: Binance },
+  { cardano: Cardano },
+  { celo: Celo },
+  { eos: EOS },
+  { fantom: Fantom },
+  { flow: Flow },
+  { kadena: Kadena },
+  { okex: Okex },
+  { polkadot: Polkadot },
+  { solana: Solana },
 ];
