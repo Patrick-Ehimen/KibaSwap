@@ -9,6 +9,7 @@ const nextConfig = {
       "s2.coinmarketcap.com",
       "cryptologos.cc",
       "coin-images.coingecko.com",
+      "cdn.moralis.io",
     ],
   },
 };
