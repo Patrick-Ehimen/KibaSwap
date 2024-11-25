@@ -157,7 +157,7 @@ export default function MarketData() {
           {!isAtTop && (
             <div
               onClick={scrollToTop}
-              className="fixed bg-[#353546] rounded-full p-2 bottom-4 right-4 z-10"
+              className="fixed bg-[#353546] cursor-pointer rounded-full p-2 bottom-48 right-4 z-10"
             >
               <ArrowUp color="#e33319" />
             </div>
@@ -240,7 +240,7 @@ export default function MarketData() {
                 <TableCaption className="mb-2">
                   A list of Cryptocurrencies prices.
                 </TableCaption>
-                <TableHeader className="rounded-lg table-header-border w-fit">
+                <TableHeader className="rounded-lg cursor-pointer table-header-border w-fit">
                   <TableRow>
                     <TableHead className="w-fit">#</TableHead>
                     <TableHead className="w-fit">Coin</TableHead>
@@ -258,6 +258,7 @@ export default function MarketData() {
                       ))
                     : data.map((coinData: any, index: number) => (
                         <TableRow
+                          className="cursor-pointer"
                           key={coinData.id}
                           onClick={() => setSelectedCoinId(coinData.id)}
                         >
