@@ -17,7 +17,7 @@ export default function MarketTokenBreadcrumb({ id }: { id: string }) {
       <BreadcrumbList>
         <BreadcrumbItem>
           <BreadcrumbLink>
-            <Link href="/explore">Markets</Link>
+            <Link href="">Markets</Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />
