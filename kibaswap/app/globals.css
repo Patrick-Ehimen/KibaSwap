@@ -110,6 +110,15 @@
   color: "#FD4C42";
 }
 
+.market-overview {
+  font-weight: 700;
+  font-size: larger;
+}
+
+.bg-color {
+  background-color: "#FD4C42";
+}
+
 @keyframes wave {
   0% {
     transform: rotate(5deg);
