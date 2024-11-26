@@ -19,7 +19,7 @@ import { Ethereum } from "@/public";
 type Token = {
   name: string;
   symbol: string;
-  logo: string;
+  logo: string | undefined;
   tokenBalance: string;
   usdValue: string;
   priceinUsd: number | null; // Adjust based on your needs
@@ -64,8 +64,8 @@ export default function Send() {
           symbol: token.symbol,
           logo: token.logo,
           tokenBalance: token.balanceFormatted,
-          usdValue: token.usdValue || "N/A",
-          priceinUsd: token.usdPrice,
+          usdValue: token.usdValue ? token.usdValue.toString() : "N/A",
+          priceinUsd: token.usdPrice ? parseFloat(token.usdPrice) : null,
         }));
 
         setFormattedResponse(formattedResponse);
