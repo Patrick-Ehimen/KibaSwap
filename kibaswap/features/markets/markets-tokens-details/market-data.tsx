@@ -24,6 +24,7 @@ import {
 } from "@/config/millify-config";
 
 import MarketTokensDetails from "./market-tokens-details";
+import MarketSearchSkeleton from "./skeletons/market-search-skeleton";
 
 // Skeleton component for loading state
 const SkeletonRow = () => (
@@ -57,16 +58,6 @@ const SkeletonRow = () => (
       <Skeleton className="h-3 w-[100px]" />
     </TableCell>
   </TableRow>
-);
-
-const SearchSkeleton = () => (
-  <div className="flex space-x-2">
-    <Skeleton className="h-8 w-8 rounded-full" />
-    <div className="space-y-2">
-      <Skeleton className="h-3 w-[100px]" />
-      <Skeleton className="h-3 w-[50px]" />
-    </div>
-  </div>
 );
 
 export default function MarketData() {
@@ -219,13 +210,7 @@ export default function MarketData() {
                   </TableBody>
                 </Table>
               ) : (
-                <div className="flex space-x-2 w-full">
-                  <Skeleton className="h-8 w-8 rounded-full" />
-                  <div className="space-y-2">
-                    <Skeleton className="h-3 w-[100px]" />
-                    <Skeleton className="h-3 w-[50px]" />
-                  </div>
-                </div> // Message if no results
+                <MarketSearchSkeleton />
               )}
             </div>
           ) : (
