@@ -3,45 +3,49 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Moralis from "moralis";
-import millify from "millify";
 
-import { useAccount, useChainId } from "wagmi";
+import {
+  useAccount,
+  useChainId,
+  useSendTransaction,
+  useWaitForTransactionReceipt,
+  type BaseError,
+} from "wagmi";
+import { parseEther } from "viem";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 
-import { ChevronDown, Repeat } from "lucide-react";
+import { ChevronDown, Copy, Check } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { Ethereum } from "@/public";
-
-type Token = {
-  name: string;
-  symbol: string;
-  logo: string | undefined;
-  tokenBalance: string;
-  usdValue: string;
-  priceinUsd: number | null; // Adjust based on your needs
-};
+import { Token } from "@/types";
 
 export default function Send() {
   const [amount, setAmount] = useState("");
-  const [ethAmount, setEthAmount] = useState("0");
   const [walletAddress, setWalletAddress] = useState("");
-  const [displayMode, setDisplayMode] = useState<"ETH" | "USD">("ETH");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
   const [formattedResponse, setFormattedResponse] = useState<Token[]>([]);
   const [selectedToken, setSelectedToken] = useState<Token | null>(null);
+  const [copyStatus, setCopyStatus] = useState(false);
 
   const { isConnected, address } = useAccount();
   const chainId = useChainId();
+  const {
+    data: hash,
+    error,
+    isPending,
+    sendTransaction,
+  } = useSendTransaction();
 
   console.log(`Chain ID:: ${chainId}`);
   console.log(
     `wallet connected:: ${isConnected}, and wallet address:: ${address}`
   );
+  console.log("Amount::", amount);
+  console.log("walletAddress::", walletAddress);
 
   useEffect(() => {
     const fetchTokenBalances = async () => {
@@ -81,8 +85,35 @@ export default function Send() {
     }
   }, [isConnected, address, chainId]);
 
-  const handleToggleDisplay = () => {
-    setDisplayMode((prevMode) => (prevMode === "ETH" ? "USD" : "ETH")); // Toggle between ETH and USD
+  async function sendTxs() {
+    // Ensure that walletAddress and amount are available
+    if (!walletAddress || !amount) {
+      console.error("Wallet address and amount are required.");
+      return;
+    }
+
+    const to: `0x${string}` = walletAddress as `0x${string}`; // Use the walletAddress state as 'to'
+    const value: string = amount; // Use the amount state as 'value'
+
+    try {
+      await sendTransaction({ to, value: parseEther(value) }); // Call sendTransaction with the parsed value
+      console.log(`Transaction sent: ${value} to ${to}`);
+    } catch (error) {
+      console.error("Transaction failed:", error);
+    }
+  }
+
+  const { isLoading: isConfirming, isSuccess: isConfirmed } =
+    useWaitForTransactionReceipt({
+      hash,
+    });
+
+  // Function to copy the hash to clipboard
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopyStatus(true); // Set copy status to true
+      setTimeout(() => setCopyStatus(false), 2000); // Reset after 2 seconds
+    });
   };
 
   return (
@@ -102,17 +133,6 @@ export default function Send() {
               placeholder="0"
               min="0"
             />
-          </div>
-          <div className="text-center mb-12">
-            <span className="text-gray-500 text-xl flex items-center justify-center">
-              {displayMode === "ETH" ? ethAmount : amount.toString()}{" "}
-              {/* {displayMode} Conditional rendering */}
-              <Repeat
-                className="ml-2 cursor-pointer"
-                onClick={handleToggleDisplay}
-              />{" "}
-              {/* Added click handler */}
-            </span>
           </div>
 
           {/* Only show this div if the wallet is not connected */}
@@ -224,7 +244,7 @@ export default function Send() {
             <Input
               id="wallet-address"
               type="text"
-              placeholder="Wallet address or ENS name"
+              placeholder="Enter Wallet address.."
               value={walletAddress}
               onChange={(e) => setWalletAddress(e.target.value)}
               className="bg-[#23242F] border-[#23242F] text-gray-300 placeholder-gray-500 rounded-lg"
@@ -232,11 +252,58 @@ export default function Send() {
           </div>
           <div>
             {isConnected ? (
-              <Button className="w-full bg-[#E33319] hover:bg-[#e35e49] text-white rounded-2xl py-6 text-lg font-semibold">
-                Send
-              </Button>
+              <div>
+                <Button
+                  className="w-full bg-[#E33319] hover:bg-[#e35e49] text-white rounded-2xl py-6 text-lg font-semibold"
+                  onClick={sendTxs}
+                  disabled={isPending || !walletAddress || !amount} // Disable if walletAddress or amount is empty
+                >
+                  {isPending
+                    ? "Confirming..."
+                    : !walletAddress && !amount
+                    ? "Enter address and amount"
+                    : !walletAddress
+                    ? "Enter wallet address"
+                    : !amount
+                    ? "Enter amount"
+                    : "Send"}{" "}
+                </Button>
+                {isConfirmed && (
+                  <div className="text-base my-2 text-gray-400">
+                    Transaction confirmed.
+                  </div>
+                )}
+                {hash && (
+                  <div className="my-5">
+                    <div className="text-[#e33319]">Transaction Successful</div>
+                    <div className="text-gray-400 text-base flex items-center">
+                      Transaction Hash: {hash?.slice(0, 6)}...{hash?.slice(-4)}{" "}
+                      {/* Shorten the hash */}
+                      <button
+                        onClick={() => copyToClipboard(hash)}
+                        className="ml-2"
+                      >
+                        {copyStatus ? (
+                          <span>
+                            <Check size={15} />
+                          </span> // Checkmark when copied
+                        ) : (
+                          <span>
+                            <Copy size={15} />
+                          </span> // Copy icon
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {error && (
+                  <div>
+                    Error: {(error as BaseError).shortMessage || error.message}
+                  </div>
+                )}
+              </div>
             ) : (
-              <Button className="w-full bg-[#E33319] text-white rounded-2xl py-6 text-lg font-semibold">
+              <Button className="w-full bg-[#E33319] hover:bg-[#e33319] text-white rounded-2xl py-6 text-lg font-semibold">
                 <ConnectButton
                   accountStatus={{
                     smallScreen: "avatar",
