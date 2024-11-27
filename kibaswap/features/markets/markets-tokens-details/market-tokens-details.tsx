@@ -18,7 +18,7 @@ import millify from "millify";
 import { millifyConfig } from "@/config/millify-config";
 
 import MarketTokenBreadcrumb from "./market-token-breadcrumb";
-import MarketTokenSkeleton from "./market-token-skeleton";
+import MarketTokenSkeleton from "./skeletons/market-token-skeleton";
 
 export default function MarketTokensDetails({ id }: { id: string }) {
   const [coinData, setCoinData] = useState<any>(null);
