@@ -10,6 +10,7 @@ import {
   bsc,
   avalanche,
   sepolia,
+  avalancheFuji,
 } from "wagmi/chains";
 // Importing various wallet options from RainbowKit
 import {
@@ -57,7 +58,9 @@ export const config = getDefaultConfig({
     bsc,
     avalanche,
     // Conditionally adding Sepolia network if testnets are enabled
-    ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === "true" ? [sepolia] : []),
+    ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === "true"
+      ? [sepolia, avalancheFuji]
+      : []),
   ],
   // Enabling server-side rendering
   ssr: true,
