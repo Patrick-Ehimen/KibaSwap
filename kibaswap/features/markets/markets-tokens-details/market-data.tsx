@@ -59,6 +59,16 @@ const SkeletonRow = () => (
   </TableRow>
 );
 
+const SearchSkeleton = () => (
+  <div className="flex space-x-2">
+    <Skeleton className="h-8 w-8 rounded-full" />
+    <div className="space-y-2">
+      <Skeleton className="h-3 w-[100px]" />
+      <Skeleton className="h-3 w-[50px]" />
+    </div>
+  </div>
+);
+
 export default function MarketData() {
   const [data, setData] = useState([]);
   //   const [selectedCoinId, setSelectedCoinId] = useState(null);
@@ -157,7 +167,7 @@ export default function MarketData() {
           {!isAtTop && (
             <div
               onClick={scrollToTop}
-              className="fixed bg-[#353546] cursor-pointer rounded-full p-2 bottom-48 right-4 z-10"
+              className="fixed bg-[#353546] cursor-pointer bottom-0 left-2 rounded-full p-2 z-10"
             >
               <ArrowUp color="#e33319" />
             </div>
@@ -172,6 +182,7 @@ export default function MarketData() {
                 <ArrowLeft />
               </div>
               <h3 className="my-2">Search Results:</h3>
+
               {searchResults.length > 0 ? (
                 <Table className="rounded-lg bg-[#353546]">
                   <TableHeader className="rounded-lg table-header-border w-fit">
@@ -208,7 +219,13 @@ export default function MarketData() {
                   </TableBody>
                 </Table>
               ) : (
-                <p>No results found.</p> // Message if no results
+                <div className="flex space-x-2 w-full">
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-3 w-[100px]" />
+                    <Skeleton className="h-3 w-[50px]" />
+                  </div>
+                </div> // Message if no results
               )}
             </div>
           ) : (
@@ -282,14 +299,23 @@ export default function MarketData() {
                           <TableCell className="font-medium">
                             ${millify(coinData.current_price, millifyConfig)}
                           </TableCell>
-                          <TableCell>{millify(coinData.market_cap)}</TableCell>
+                          <TableCell>${millify(coinData.market_cap)}</TableCell>
                           <TableCell>
                             <div
-                              className={`${
-                                coinData.price_change_percentage_24h > 0
-                                  ? "border-[#12BE73] border text-[#12BE73] rounded text-center p-1"
-                                  : "border-[#FD4C42] border text-[#FD4C42] rounded text-center p-1"
-                              }`}
+                              style={{
+                                border: `1px solid ${
+                                  coinData.price_change_percentage_24h > 0
+                                    ? "#12BE73"
+                                    : "#FD4C42"
+                                }`,
+                                color:
+                                  coinData.price_change_percentage_24h > 0
+                                    ? "#12BE73"
+                                    : "#FD4C42",
+                                borderRadius: "0.25rem",
+                                textAlign: "center",
+                                padding: "0.25rem",
+                              }}
                             >
                               {millify(
                                 coinData.price_change_percentage_24h,
