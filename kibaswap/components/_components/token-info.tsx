@@ -34,8 +34,12 @@ export default function TokenInfo({ token }: TokenInfoProps) {
       <div className="flex items-center space-x-2">
         <div className="flex gap-2">
           <Image src={token.logo} alt={token.name} width={30} height={30} />
-          <h2 className="text-xl font-semibold">{token.name}</h2>
-          <h2 className="mt-1 text-gray-400">{token.symbol} </h2>
+          <h2 className="text-xl font-semibold dark:text-white text-black">
+            {token.name}
+          </h2>
+          <h2 className="mt-1 text-gray-600 dark:text-gray-400">
+            {token.symbol}{" "}
+          </h2>
         </div>
       </div>
       <div className="flex items-center space-x-2">
