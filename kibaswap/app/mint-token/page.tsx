@@ -28,6 +28,7 @@ export default function MintToken() {
   const [walletAddress, setWalletAddress] = useState("");
   const [isCardVisible, setIsCardVisible] = useState(true);
   const [copyStatus, setCopyStatus] = useState(false);
+  const [copyAddrStatus, setAddrCopyStatus] = useState(false);
   const [showError, setShowError] = useState(false);
 
   const { data: hash, error, isPending, writeContract } = useWriteContract();
@@ -51,6 +52,13 @@ export default function MintToken() {
     navigator.clipboard.writeText(text).then(() => {
       setCopyStatus(true); // Set copy status to true
       setTimeout(() => setCopyStatus(false), 2000); // Reset after 2 seconds
+    });
+  };
+
+  const copyAddrToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setAddrCopyStatus(true); // Set copy status to true
+      setTimeout(() => setAddrCopyStatus(false), 2000); // Reset after 2 seconds
     });
   };
 
@@ -103,17 +111,6 @@ export default function MintToken() {
             >
               Next
             </Button>
-          </CardContent>
-        </Card>
-      ) : isConfirmed ? ( // Check if transaction was successful
-        <Card className="w-full max-w-md bg-[#353546] border-none shadow-lg">
-          <CardContent className="flex flex-col items-center justify-center">
-            <div className="font-bold text-3xl text-gray-500">
-              Transaction Successful!
-            </div>
-            <CardDescription className="text-center text-[20px]">
-              Your tokens have been successfully claimed.
-            </CardDescription>
           </CardContent>
         </Card>
       ) : (
@@ -174,8 +171,11 @@ export default function MintToken() {
             <div className="text-gray-400 text-base flex items-center">
               Contract Address:{" "}
               {shortenAddress("0x4a61167fcE1a630BEecC49eF4224cf83Fdcc025A")}
-              <button onClick={() => copyToClipboard(hash)} className="ml-2">
-                {copyStatus ? (
+              <button
+                onClick={() => copyAddrToClipboard(hash)}
+                className="ml-2"
+              >
+                {copyAddrStatus ? (
                   <span>
                     <Check size={15} />
                   </span> // Checkmark when copied
