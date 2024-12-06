@@ -56,18 +56,18 @@ export const menuItems = [
   },
   {
     id: 2,
-    title: "NFT",
-    link: "/stake-nft",
+    title: "Stake",
+    link: "/stake",
     hoverContents: [
       {
         avatarSrc: Position,
-        description: "Stake NFT",
-        link: "/stake-nft",
+        description: "Stake",
+        link: "/stake",
       },
       {
         avatarSrc: AddPosition,
-        description: "Mint NFT",
-        link: "",
+        description: "Mint Token",
+        link: "/mint-token",
       },
     ],
   },
