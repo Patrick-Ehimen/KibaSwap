@@ -19,6 +19,8 @@ import Etherscan from "./assets/etherscan.svg";
 import X from "./assets/x.svg";
 import Staking from "./assets/Staking.svg";
 import Delegates from "./assets/Delegates.svg";
+import Airdrop from "./assets/airdrop.png";
+import BTC from "./assets/bitcoin.png";
 
 export {
   Logo,
@@ -42,4 +44,6 @@ export {
   X,
   Staking,
   Delegates,
+  Airdrop,
+  BTC,
 };
