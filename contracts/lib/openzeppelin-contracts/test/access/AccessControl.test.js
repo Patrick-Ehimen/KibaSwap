@@ -1,12 +1,13 @@
-const { DEFAULT_ADMIN_ROLE, shouldBehaveLikeAccessControl } = require('./AccessControl.behavior.js');
+const {
+  shouldBehaveLikeAccessControl,
+} = require('./AccessControl.behavior.js');
 
-const AccessControl = artifacts.require('$AccessControl');
+const AccessControlMock = artifacts.require('AccessControlMock');
 
 contract('AccessControl', function (accounts) {
   beforeEach(async function () {
-    this.accessControl = await AccessControl.new({ from: accounts[0] });
-    await this.accessControl.$_grantRole(DEFAULT_ADMIN_ROLE, accounts[0]);
+    this.accessControl = await AccessControlMock.new({ from: accounts[0] });
   });
 
-  shouldBehaveLikeAccessControl(...accounts);
+  shouldBehaveLikeAccessControl('AccessControl', ...accounts);
 });

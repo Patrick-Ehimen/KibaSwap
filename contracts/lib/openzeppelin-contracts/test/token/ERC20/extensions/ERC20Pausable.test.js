@@ -1,12 +1,11 @@
-const { BN } = require('@openzeppelin/test-helpers');
+const { BN, expectRevert } = require('@openzeppelin/test-helpers');
 
 const { expect } = require('chai');
-const { expectRevertCustomError } = require('../../../helpers/customError');
 
-const ERC20Pausable = artifacts.require('$ERC20Pausable');
+const ERC20PausableMock = artifacts.require('ERC20PausableMock');
 
 contract('ERC20Pausable', function (accounts) {
-  const [holder, recipient, anotherAccount] = accounts;
+  const [ holder, recipient, anotherAccount ] = accounts;
 
   const initialSupply = new BN(100);
 
@@ -14,8 +13,7 @@ contract('ERC20Pausable', function (accounts) {
   const symbol = 'MTKN';
 
   beforeEach(async function () {
-    this.token = await ERC20Pausable.new(name, symbol);
-    await this.token.$_mint(holder, initialSupply);
+    this.token = await ERC20PausableMock.new(name, symbol, holder, initialSupply);
   });
 
   describe('pausable token', function () {
@@ -28,8 +26,8 @@ contract('ERC20Pausable', function (accounts) {
       });
 
       it('allows to transfer when paused and then unpaused', async function () {
-        await this.token.$_pause();
-        await this.token.$_unpause();
+        await this.token.pause();
+        await this.token.unpause();
 
         await this.token.transfer(recipient, initialSupply, { from: holder });
 
@@ -38,12 +36,10 @@ contract('ERC20Pausable', function (accounts) {
       });
 
       it('reverts when trying to transfer when paused', async function () {
-        await this.token.$_pause();
+        await this.token.pause();
 
-        await expectRevertCustomError(
-          this.token.transfer(recipient, initialSupply, { from: holder }),
-          'EnforcedPause',
-          [],
+        await expectRevert(this.token.transfer(recipient, initialSupply, { from: holder }),
+          'ERC20Pausable: token transfer while paused',
         );
       });
     });
@@ -63,8 +59,8 @@ contract('ERC20Pausable', function (accounts) {
       });
 
       it('allows to transfer when paused and then unpaused', async function () {
-        await this.token.$_pause();
-        await this.token.$_unpause();
+        await this.token.pause();
+        await this.token.unpause();
 
         await this.token.transferFrom(holder, recipient, allowance, { from: anotherAccount });
 
@@ -73,63 +69,65 @@ contract('ERC20Pausable', function (accounts) {
       });
 
       it('reverts when trying to transfer from when paused', async function () {
-        await this.token.$_pause();
+        await this.token.pause();
 
-        await expectRevertCustomError(
-          this.token.transferFrom(holder, recipient, allowance, { from: anotherAccount }),
-          'EnforcedPause',
-          [],
+        await expectRevert(this.token.transferFrom(
+          holder, recipient, allowance, { from: anotherAccount }), 'ERC20Pausable: token transfer while paused',
         );
       });
     });
 
     describe('mint', function () {
-      const value = new BN('42');
+      const amount = new BN('42');
 
       it('allows to mint when unpaused', async function () {
-        await this.token.$_mint(recipient, value);
+        await this.token.mint(recipient, amount);
 
-        expect(await this.token.balanceOf(recipient)).to.be.bignumber.equal(value);
+        expect(await this.token.balanceOf(recipient)).to.be.bignumber.equal(amount);
       });
 
       it('allows to mint when paused and then unpaused', async function () {
-        await this.token.$_pause();
-        await this.token.$_unpause();
+        await this.token.pause();
+        await this.token.unpause();
 
-        await this.token.$_mint(recipient, value);
+        await this.token.mint(recipient, amount);
 
-        expect(await this.token.balanceOf(recipient)).to.be.bignumber.equal(value);
+        expect(await this.token.balanceOf(recipient)).to.be.bignumber.equal(amount);
       });
 
       it('reverts when trying to mint when paused', async function () {
-        await this.token.$_pause();
+        await this.token.pause();
 
-        await expectRevertCustomError(this.token.$_mint(recipient, value), 'EnforcedPause', []);
+        await expectRevert(this.token.mint(recipient, amount),
+          'ERC20Pausable: token transfer while paused',
+        );
       });
     });
 
     describe('burn', function () {
-      const value = new BN('42');
+      const amount = new BN('42');
 
       it('allows to burn when unpaused', async function () {
-        await this.token.$_burn(holder, value);
+        await this.token.burn(holder, amount);
 
-        expect(await this.token.balanceOf(holder)).to.be.bignumber.equal(initialSupply.sub(value));
+        expect(await this.token.balanceOf(holder)).to.be.bignumber.equal(initialSupply.sub(amount));
       });
 
       it('allows to burn when paused and then unpaused', async function () {
-        await this.token.$_pause();
-        await this.token.$_unpause();
+        await this.token.pause();
+        await this.token.unpause();
 
-        await this.token.$_burn(holder, value);
+        await this.token.burn(holder, amount);
 
-        expect(await this.token.balanceOf(holder)).to.be.bignumber.equal(initialSupply.sub(value));
+        expect(await this.token.balanceOf(holder)).to.be.bignumber.equal(initialSupply.sub(amount));
       });
 
       it('reverts when trying to burn when paused', async function () {
-        await this.token.$_pause();
+        await this.token.pause();
 
-        await expectRevertCustomError(this.token.$_burn(holder, value), 'EnforcedPause', []);
+        await expectRevert(this.token.burn(holder, amount),
+          'ERC20Pausable: token transfer while paused',
+        );
       });
     });
   });

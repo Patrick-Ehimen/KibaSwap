@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.0;
 
 contract CallReceiverMock {
+    string public sharedAnswer;
+
     event MockFunctionCalled();
     event MockFunctionCalledWithArgs(uint256 a, uint256 b);
 
@@ -12,10 +14,6 @@ contract CallReceiverMock {
         emit MockFunctionCalled();
 
         return "0x1234";
-    }
-
-    function mockFunctionEmptyReturn() public payable {
-        emit MockFunctionCalled();
     }
 
     function mockFunctionWithArgs(uint256 a, uint256 b) public payable returns (string memory) {
@@ -52,22 +50,8 @@ contract CallReceiverMock {
         }
     }
 
-    function mockFunctionWritesStorage(bytes32 slot, bytes32 value) public returns (string memory) {
-        assembly {
-            sstore(slot, value)
-        }
+    function mockFunctionWritesStorage() public returns (string memory) {
+        sharedAnswer = "42";
         return "0x1234";
-    }
-}
-
-contract CallReceiverMockTrustingForwarder is CallReceiverMock {
-    address private _trustedForwarder;
-
-    constructor(address trustedForwarder_) {
-        _trustedForwarder = trustedForwarder_;
-    }
-
-    function isTrustedForwarder(address forwarder) public view virtual returns (bool) {
-        return forwarder == _trustedForwarder;
     }
 }

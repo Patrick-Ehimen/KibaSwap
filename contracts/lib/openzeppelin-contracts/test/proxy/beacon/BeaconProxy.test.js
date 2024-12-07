@@ -1,8 +1,6 @@
 const { expectRevert } = require('@openzeppelin/test-helpers');
 const { getSlot, BeaconSlot } = require('../../helpers/erc1967');
 
-const { expectRevertCustomError } = require('../../helpers/customError');
-
 const { expect } = require('chai');
 
 const UpgradeableBeacon = artifacts.require('UpgradeableBeacon');
@@ -13,24 +11,29 @@ const BadBeaconNoImpl = artifacts.require('BadBeaconNoImpl');
 const BadBeaconNotContract = artifacts.require('BadBeaconNotContract');
 
 contract('BeaconProxy', function (accounts) {
-  const [upgradeableBeaconAdmin, anotherAccount] = accounts;
+  const [anotherAccount] = accounts;
 
   describe('bad beacon is not accepted', async function () {
     it('non-contract beacon', async function () {
-      await expectRevertCustomError(BeaconProxy.new(anotherAccount, '0x'), 'ERC1967InvalidBeacon', [anotherAccount]);
+      await expectRevert(
+        BeaconProxy.new(anotherAccount, '0x'),
+        'ERC1967: new beacon is not a contract',
+      );
     });
 
     it('non-compliant beacon', async function () {
       const beacon = await BadBeaconNoImpl.new();
-      await expectRevert.unspecified(BeaconProxy.new(beacon.address, '0x'));
+      await expectRevert.unspecified(
+        BeaconProxy.new(beacon.address, '0x'),
+      );
     });
 
     it('non-contract implementation', async function () {
       const beacon = await BadBeaconNotContract.new();
-      const implementation = await beacon.implementation();
-      await expectRevertCustomError(BeaconProxy.new(beacon.address, '0x'), 'ERC1967InvalidImplementation', [
-        implementation,
-      ]);
+      await expectRevert(
+        BeaconProxy.new(beacon.address, '0x'),
+        'ERC1967: beacon implementation is not a contract',
+      );
     });
   });
 
@@ -54,50 +57,51 @@ contract('BeaconProxy', function (accounts) {
     });
 
     beforeEach('deploy beacon', async function () {
-      this.beacon = await UpgradeableBeacon.new(this.implementationV0.address, upgradeableBeaconAdmin);
+      this.beacon = await UpgradeableBeacon.new(this.implementationV0.address);
     });
 
     it('no initialization', async function () {
       const data = Buffer.from('');
-      this.proxy = await BeaconProxy.new(this.beacon.address, data);
-      await this.assertInitialized({ value: '0', balance: '0' });
+      const balance = '10';
+      this.proxy = await BeaconProxy.new(this.beacon.address, data, { value: balance });
+      await this.assertInitialized({ value: '0', balance });
     });
 
     it('non-payable initialization', async function () {
       const value = '55';
-      const data = this.implementationV0.contract.methods.initializeNonPayableWithValue(value).encodeABI();
+      const data = this.implementationV0.contract.methods
+        .initializeNonPayableWithValue(value)
+        .encodeABI();
       this.proxy = await BeaconProxy.new(this.beacon.address, data);
       await this.assertInitialized({ value, balance: '0' });
     });
 
     it('payable initialization', async function () {
       const value = '55';
-      const data = this.implementationV0.contract.methods.initializePayableWithValue(value).encodeABI();
+      const data = this.implementationV0.contract.methods
+        .initializePayableWithValue(value)
+        .encodeABI();
       const balance = '100';
       this.proxy = await BeaconProxy.new(this.beacon.address, data, { value: balance });
       await this.assertInitialized({ value, balance });
     });
 
-    it('reverting initialization due to value', async function () {
-      const data = Buffer.from('');
-      await expectRevertCustomError(
-        BeaconProxy.new(this.beacon.address, data, { value: '1' }),
-        'ERC1967NonPayable',
-        [],
-      );
-    });
-
-    it('reverting initialization function', async function () {
+    it('reverting initialization', async function () {
       const data = this.implementationV0.contract.methods.reverts().encodeABI();
-      await expectRevert(BeaconProxy.new(this.beacon.address, data), 'DummyImplementation reverted');
+      await expectRevert(
+        BeaconProxy.new(this.beacon.address, data),
+        'DummyImplementation reverted',
+      );
     });
   });
 
   it('upgrade a proxy by upgrading its beacon', async function () {
-    const beacon = await UpgradeableBeacon.new(this.implementationV0.address, upgradeableBeaconAdmin);
+    const beacon = await UpgradeableBeacon.new(this.implementationV0.address);
 
     const value = '10';
-    const data = this.implementationV0.contract.methods.initializeNonPayableWithValue(value).encodeABI();
+    const data = this.implementationV0.contract.methods
+      .initializeNonPayableWithValue(value)
+      .encodeABI();
     const proxy = await BeaconProxy.new(beacon.address, data);
 
     const dummy = new DummyImplementation(proxy.address);
@@ -109,7 +113,7 @@ contract('BeaconProxy', function (accounts) {
     expect(await dummy.version()).to.eq('V1');
 
     // upgrade beacon
-    await beacon.upgradeTo(this.implementationV1.address, { from: upgradeableBeaconAdmin });
+    await beacon.upgradeTo(this.implementationV1.address);
 
     // test upgraded version
     expect(await dummy.version()).to.eq('V2');
@@ -119,7 +123,7 @@ contract('BeaconProxy', function (accounts) {
     const value1 = '10';
     const value2 = '42';
 
-    const beacon = await UpgradeableBeacon.new(this.implementationV0.address, upgradeableBeaconAdmin);
+    const beacon = await UpgradeableBeacon.new(this.implementationV0.address);
 
     const proxy1InitializeData = this.implementationV0.contract.methods
       .initializeNonPayableWithValue(value1)
@@ -143,7 +147,7 @@ contract('BeaconProxy', function (accounts) {
     expect(await dummy2.version()).to.eq('V1');
 
     // upgrade beacon
-    await beacon.upgradeTo(this.implementationV1.address, { from: upgradeableBeaconAdmin });
+    await beacon.upgradeTo(this.implementationV1.address);
 
     // test upgraded version
     expect(await dummy1.version()).to.eq('V2');

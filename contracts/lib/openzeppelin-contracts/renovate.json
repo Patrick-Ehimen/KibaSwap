@@ -1,4 +1,11 @@
 {
-  "extends": ["github>OpenZeppelin/configs"],
-  "labels": ["ignore-changeset"]
+  "extends": [
+    "github>OpenZeppelin/code-style"
+  ],
+  "packageRules": [
+    {
+      "extends": ["packages:eslint"],
+      "enabled": false
+    }
+  ]
 }

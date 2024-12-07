@@ -1,24 +1,27 @@
-const { ether } = require('@openzeppelin/test-helpers');
+const { BN, ether, expectRevert } = require('@openzeppelin/test-helpers');
 const { shouldBehaveLikeERC20Capped } = require('./ERC20Capped.behavior');
-const { expectRevertCustomError } = require('../../../helpers/customError');
 
-const ERC20Capped = artifacts.require('$ERC20Capped');
+const ERC20Capped = artifacts.require('ERC20CappedMock');
 
 contract('ERC20Capped', function (accounts) {
+  const [ minter, ...otherAccounts ] = accounts;
+
   const cap = ether('1000');
 
   const name = 'My Token';
   const symbol = 'MTKN';
 
   it('requires a non-zero cap', async function () {
-    await expectRevertCustomError(ERC20Capped.new(name, symbol, 0), 'ERC20InvalidCap', [0]);
+    await expectRevert(
+      ERC20Capped.new(name, symbol, new BN(0), { from: minter }), 'ERC20Capped: cap is 0',
+    );
   });
 
   context('once deployed', async function () {
     beforeEach(async function () {
-      this.token = await ERC20Capped.new(name, symbol, cap);
+      this.token = await ERC20Capped.new(name, symbol, cap, { from: minter });
     });
 
-    shouldBehaveLikeERC20Capped(accounts, cap);
+    shouldBehaveLikeERC20Capped(minter, otherAccounts, cap);
   });
 });

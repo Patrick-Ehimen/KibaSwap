@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
-// OpenZeppelin Contracts (last updated v5.0.2) (utils/Base64.sol)
+// OpenZeppelin Contracts (last updated v4.7.0) (utils/Base64.sol)
 
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.0;
 
 /**
  * @dev Provides a set of functions to operate with Base64 strings.
+ *
+ * _Available since v4.5._
  */
 library Base64 {
     /**
@@ -39,19 +41,12 @@ library Base64 {
             let tablePtr := add(table, 1)
 
             // Prepare result pointer, jump over length
-            let resultPtr := add(result, 0x20)
-            let dataPtr := data
-            let endPtr := add(data, mload(data))
-
-            // In some cases, the last iteration will read bytes after the end of the data. We cache the value, and
-            // set it to zero to make sure no dirty bytes are read in that section.
-            let afterPtr := add(endPtr, 0x20)
-            let afterCache := mload(afterPtr)
-            mstore(afterPtr, 0x00)
+            let resultPtr := add(result, 32)
 
             // Run over the input, 3 bytes at a time
             for {
-
+                let dataPtr := data
+                let endPtr := add(data, mload(data))
             } lt(dataPtr, endPtr) {
 
             } {
@@ -59,12 +54,13 @@ library Base64 {
                 dataPtr := add(dataPtr, 3)
                 let input := mload(dataPtr)
 
-                // To write each character, shift the 3 byte (24 bits) chunk
+                // To write each character, shift the 3 bytes (18 bits) chunk
                 // 4 times in blocks of 6 bits for each character (18, 12, 6, 0)
-                // and apply logical AND with 0x3F to bitmask the least significant 6 bits.
-                // Use this as an index into the lookup table, mload an entire word
-                // so the desired character is in the least significant byte, and
-                // mstore8 this least significant byte into the result and continue.
+                // and apply logical AND with 0x3F which is the number of
+                // the previous character in the ASCII table prior to the Base64 Table
+                // The result is then added to the table to get the character to write,
+                // and finally write it in the result pointer but with a left shift
+                // of 256 (1 byte) - 8 (1 ASCII char) = 248 bits
 
                 mstore8(resultPtr, mload(add(tablePtr, and(shr(18, input), 0x3F))))
                 resultPtr := add(resultPtr, 1) // Advance
@@ -78,9 +74,6 @@ library Base64 {
                 mstore8(resultPtr, mload(add(tablePtr, and(input, 0x3F))))
                 resultPtr := add(resultPtr, 1) // Advance
             }
-
-            // Reset the value that was cached
-            mstore(afterPtr, afterCache)
 
             // When data `bytes` is not exactly 3 bytes long
             // it is padded with `=` characters at the end

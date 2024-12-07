@@ -3,13 +3,11 @@
 // - COVERAGE:          enable coverage report
 // - ENABLE_GAS_REPORT: enable gas report
 // - COMPILE_MODE:      production modes enables optimizations (default: development)
-// - COMPILE_VERSION:   compiler version (default: 0.8.20)
+// - COMPILE_VERSION:   compiler version (default: 0.8.9)
 // - COINMARKETCAP:     coinmarkercat api key for USD value in gas report
 
 const fs = require('fs');
 const path = require('path');
-const proc = require('child_process');
-
 const argv = require('yargs/yargs')()
   .env('')
   .options({
@@ -31,7 +29,7 @@ const argv = require('yargs/yargs')()
     mode: {
       alias: 'compileMode',
       type: 'string',
-      choices: ['production', 'development'],
+      choices: [ 'production', 'development' ],
       default: 'development',
     },
     ir: {
@@ -39,30 +37,22 @@ const argv = require('yargs/yargs')()
       type: 'boolean',
       default: false,
     },
-    foundry: {
-      alias: 'hasFoundry',
-      type: 'boolean',
-      default: hasFoundry(),
-    },
     compiler: {
       alias: 'compileVersion',
       type: 'string',
-      default: '0.8.20',
+      default: '0.8.13',
     },
     coinmarketcap: {
       alias: 'coinmarketcapApiKey',
       type: 'string',
     },
-  }).argv;
+  })
+  .argv;
 
 require('@nomiclabs/hardhat-truffle5');
-require('hardhat-ignore-warnings');
-require('hardhat-exposed');
-require('solidity-docgen');
-argv.foundry && require('@nomicfoundation/hardhat-foundry');
 
-if (argv.foundry && argv.coverage) {
-  throw Error('Coverage analysis is incompatible with Foundry. Disable with `FOUNDRY=false` in the environment');
+if (argv.gas) {
+  require('hardhat-gas-reporter');
 }
 
 for (const f of fs.readdirSync(path.join(__dirname, 'hardhat'))) {
@@ -83,18 +73,6 @@ module.exports = {
         runs: 200,
       },
       viaIR: withOptimizations && argv.ir,
-      outputSelection: { '*': { '*': ['storageLayout'] } },
-    },
-  },
-  warnings: {
-    'contracts-exposed/**/*': {
-      'code-size': 'off',
-      'initcode-size': 'off',
-    },
-    '*': {
-      'code-size': withOptimizations,
-      'unused-param': !argv.coverage, // coverage causes unused-param warnings
-      default: 'error',
     },
   },
   networks: {
@@ -103,29 +81,15 @@ module.exports = {
       allowUnlimitedContractSize: !withOptimizations,
     },
   },
-  exposed: {
-    imports: true,
-    initializers: true,
-    exclude: ['vendor/**/*'],
-  },
-  docgen: require('./docs/config'),
-};
-
-if (argv.gas) {
-  require('hardhat-gas-reporter');
-  module.exports.gasReporter = {
+  gasReporter: {
     showMethodSig: true,
     currency: 'USD',
     outputFile: argv.gasReport,
     coinmarketcap: argv.coinmarketcap,
-  };
-}
+  },
+};
 
 if (argv.coverage) {
   require('solidity-coverage');
   module.exports.networks.hardhat.initialBaseFeePerGas = 0;
-}
-
-function hasFoundry() {
-  return proc.spawnSync('forge', ['-V'], { stdio: 'ignore' }).error === undefined;
 }

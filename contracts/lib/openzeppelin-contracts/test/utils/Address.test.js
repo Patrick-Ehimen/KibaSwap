@@ -1,16 +1,26 @@
-const { balance, constants, ether, expectRevert, send, expectEvent } = require('@openzeppelin/test-helpers');
+const { balance, ether, expectRevert, send, expectEvent } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
-const { expectRevertCustomError } = require('../helpers/customError');
 
-const Address = artifacts.require('$Address');
+const AddressImpl = artifacts.require('AddressImpl');
 const EtherReceiver = artifacts.require('EtherReceiverMock');
 const CallReceiverMock = artifacts.require('CallReceiverMock');
 
 contract('Address', function (accounts) {
-  const [recipient, other] = accounts;
+  const [ recipient, other ] = accounts;
 
   beforeEach(async function () {
-    this.mock = await Address.new();
+    this.mock = await AddressImpl.new();
+  });
+
+  describe('isContract', function () {
+    it('returns false for account address', async function () {
+      expect(await this.mock.isContract(other)).to.equal(false);
+    });
+
+    it('returns true for contract address', async function () {
+      const contract = await AddressImpl.new();
+      expect(await this.mock.isContract(contract.address)).to.equal(true);
+    });
   });
 
   describe('sendValue', function () {
@@ -20,15 +30,13 @@ contract('Address', function (accounts) {
 
     context('when sender contract has no funds', function () {
       it('sends 0 wei', async function () {
-        await this.mock.$sendValue(other, 0);
+        await this.mock.sendValue(other, 0);
 
         expect(await this.recipientTracker.delta()).to.be.bignumber.equal('0');
       });
 
       it('reverts when sending non-zero amounts', async function () {
-        await expectRevertCustomError(this.mock.$sendValue(other, 1), 'AddressInsufficientBalance', [
-          this.mock.address,
-        ]);
+        await expectRevert(this.mock.sendValue(other, 1), 'Address: insufficient balance');
       });
     });
 
@@ -39,44 +47,44 @@ contract('Address', function (accounts) {
       });
 
       it('sends 0 wei', async function () {
-        await this.mock.$sendValue(recipient, 0);
+        await this.mock.sendValue(recipient, 0);
         expect(await this.recipientTracker.delta()).to.be.bignumber.equal('0');
       });
 
       it('sends non-zero amounts', async function () {
-        await this.mock.$sendValue(recipient, funds.subn(1));
+        await this.mock.sendValue(recipient, funds.subn(1));
         expect(await this.recipientTracker.delta()).to.be.bignumber.equal(funds.subn(1));
       });
 
       it('sends the whole balance', async function () {
-        await this.mock.$sendValue(recipient, funds);
+        await this.mock.sendValue(recipient, funds);
         expect(await this.recipientTracker.delta()).to.be.bignumber.equal(funds);
         expect(await balance.current(this.mock.address)).to.be.bignumber.equal('0');
       });
 
       it('reverts when sending more than the balance', async function () {
-        await expectRevertCustomError(this.mock.$sendValue(recipient, funds.addn(1)), 'AddressInsufficientBalance', [
-          this.mock.address,
-        ]);
+        await expectRevert(this.mock.sendValue(recipient, funds.addn(1)), 'Address: insufficient balance');
       });
 
       context('with contract recipient', function () {
         beforeEach(async function () {
-          this.target = await EtherReceiver.new();
+          this.contractRecipient = await EtherReceiver.new();
         });
 
         it('sends funds', async function () {
-          const tracker = await balance.tracker(this.target.address);
+          const tracker = await balance.tracker(this.contractRecipient.address);
 
-          await this.target.setAcceptEther(true);
-          await this.mock.$sendValue(this.target.address, funds);
-
+          await this.contractRecipient.setAcceptEther(true);
+          await this.mock.sendValue(this.contractRecipient.address, funds);
           expect(await tracker.delta()).to.be.bignumber.equal(funds);
         });
 
         it('reverts on recipient revert', async function () {
-          await this.target.setAcceptEther(false);
-          await expectRevertCustomError(this.mock.$sendValue(this.target.address, funds), 'FailedInnerCall', []);
+          await this.contractRecipient.setAcceptEther(false);
+          await expectRevert(
+            this.mock.sendValue(this.contractRecipient.address, funds),
+            'Address: unable to send value, recipient may have reverted',
+          );
         });
       });
     });
@@ -84,104 +92,117 @@ contract('Address', function (accounts) {
 
   describe('functionCall', function () {
     beforeEach(async function () {
-      this.target = await CallReceiverMock.new();
+      this.contractRecipient = await CallReceiverMock.new();
     });
 
     context('with valid contract receiver', function () {
       it('calls the requested function', async function () {
-        const abiEncodedCall = this.target.contract.methods.mockFunction().encodeABI();
+        const abiEncodedCall = web3.eth.abi.encodeFunctionCall({
+          name: 'mockFunction',
+          type: 'function',
+          inputs: [],
+        }, []);
 
-        const receipt = await this.mock.$functionCall(this.target.address, abiEncodedCall);
+        const receipt = await this.mock.functionCall(this.contractRecipient.address, abiEncodedCall);
 
-        expectEvent(receipt, 'return$functionCall', {
-          ret0: web3.eth.abi.encodeParameters(['string'], ['0x1234']),
-        });
-        await expectEvent.inTransaction(receipt.tx, CallReceiverMock, 'MockFunctionCalled');
-      });
-
-      it('calls the requested empty return function', async function () {
-        const abiEncodedCall = this.target.contract.methods.mockFunctionEmptyReturn().encodeABI();
-
-        const receipt = await this.mock.$functionCall(this.target.address, abiEncodedCall);
-
+        expectEvent(receipt, 'CallReturnValue', { data: '0x1234' });
         await expectEvent.inTransaction(receipt.tx, CallReceiverMock, 'MockFunctionCalled');
       });
 
       it('reverts when the called function reverts with no reason', async function () {
-        const abiEncodedCall = this.target.contract.methods.mockFunctionRevertsNoReason().encodeABI();
+        const abiEncodedCall = web3.eth.abi.encodeFunctionCall({
+          name: 'mockFunctionRevertsNoReason',
+          type: 'function',
+          inputs: [],
+        }, []);
 
-        await expectRevertCustomError(
-          this.mock.$functionCall(this.target.address, abiEncodedCall),
-          'FailedInnerCall',
-          [],
+        await expectRevert(
+          this.mock.functionCall(this.contractRecipient.address, abiEncodedCall),
+          'Address: low-level call failed',
         );
       });
 
       it('reverts when the called function reverts, bubbling up the revert reason', async function () {
-        const abiEncodedCall = this.target.contract.methods.mockFunctionRevertsReason().encodeABI();
+        const abiEncodedCall = web3.eth.abi.encodeFunctionCall({
+          name: 'mockFunctionRevertsReason',
+          type: 'function',
+          inputs: [],
+        }, []);
 
-        await expectRevert(this.mock.$functionCall(this.target.address, abiEncodedCall), 'CallReceiverMock: reverting');
+        await expectRevert(
+          this.mock.functionCall(this.contractRecipient.address, abiEncodedCall),
+          'CallReceiverMock: reverting',
+        );
       });
 
       it('reverts when the called function runs out of gas', async function () {
-        const abiEncodedCall = this.target.contract.methods.mockFunctionOutOfGas().encodeABI();
+        const abiEncodedCall = web3.eth.abi.encodeFunctionCall({
+          name: 'mockFunctionOutOfGas',
+          type: 'function',
+          inputs: [],
+        }, []);
 
-        await expectRevertCustomError(
-          this.mock.$functionCall(this.target.address, abiEncodedCall, { gas: '120000' }),
-          'FailedInnerCall',
-          [],
+        await expectRevert(
+          this.mock.functionCall(this.contractRecipient.address, abiEncodedCall, { gas: '120000' }),
+          'Address: low-level call failed',
         );
       });
 
       it('reverts when the called function throws', async function () {
-        const abiEncodedCall = this.target.contract.methods.mockFunctionThrows().encodeABI();
+        const abiEncodedCall = web3.eth.abi.encodeFunctionCall({
+          name: 'mockFunctionThrows',
+          type: 'function',
+          inputs: [],
+        }, []);
 
-        await expectRevert.unspecified(this.mock.$functionCall(this.target.address, abiEncodedCall));
+        await expectRevert.unspecified(
+          this.mock.functionCall(this.contractRecipient.address, abiEncodedCall),
+        );
       });
 
       it('reverts when function does not exist', async function () {
-        const abiEncodedCall = web3.eth.abi.encodeFunctionCall(
-          {
-            name: 'mockFunctionDoesNotExist',
-            type: 'function',
-            inputs: [],
-          },
-          [],
-        );
+        const abiEncodedCall = web3.eth.abi.encodeFunctionCall({
+          name: 'mockFunctionDoesNotExist',
+          type: 'function',
+          inputs: [],
+        }, []);
 
-        await expectRevertCustomError(
-          this.mock.$functionCall(this.target.address, abiEncodedCall),
-          'FailedInnerCall',
-          [],
+        await expectRevert(
+          this.mock.functionCall(this.contractRecipient.address, abiEncodedCall),
+          'Address: low-level call failed',
         );
       });
     });
 
     context('with non-contract receiver', function () {
       it('reverts when address is not a contract', async function () {
-        const [recipient] = accounts;
-        const abiEncodedCall = this.target.contract.methods.mockFunction().encodeABI();
-
-        await expectRevertCustomError(this.mock.$functionCall(recipient, abiEncodedCall), 'AddressEmptyCode', [
-          recipient,
-        ]);
+        const [ recipient ] = accounts;
+        const abiEncodedCall = web3.eth.abi.encodeFunctionCall({
+          name: 'mockFunction',
+          type: 'function',
+          inputs: [],
+        }, []);
+        await expectRevert(this.mock.functionCall(recipient, abiEncodedCall), 'Address: call to non-contract');
       });
     });
   });
 
   describe('functionCallWithValue', function () {
     beforeEach(async function () {
-      this.target = await CallReceiverMock.new();
+      this.contractRecipient = await CallReceiverMock.new();
     });
 
     context('with zero value', function () {
       it('calls the requested function', async function () {
-        const abiEncodedCall = this.target.contract.methods.mockFunction().encodeABI();
+        const abiEncodedCall = web3.eth.abi.encodeFunctionCall({
+          name: 'mockFunction',
+          type: 'function',
+          inputs: [],
+        }, []);
 
-        const receipt = await this.mock.$functionCallWithValue(this.target.address, abiEncodedCall, 0);
-        expectEvent(receipt, 'return$functionCallWithValue', {
-          ret0: web3.eth.abi.encodeParameters(['string'], ['0x1234']),
-        });
+        const receipt = await this.mock.functionCallWithValue(this.contractRecipient.address, abiEncodedCall, 0);
+
+        expectEvent(receipt, 'CallReturnValue', { data: '0x1234' });
         await expectEvent.inTransaction(receipt.tx, CallReceiverMock, 'MockFunctionCalled');
       });
     });
@@ -190,58 +211,67 @@ contract('Address', function (accounts) {
       const amount = ether('1.2');
 
       it('reverts if insufficient sender balance', async function () {
-        const abiEncodedCall = this.target.contract.methods.mockFunction().encodeABI();
+        const abiEncodedCall = web3.eth.abi.encodeFunctionCall({
+          name: 'mockFunction',
+          type: 'function',
+          inputs: [],
+        }, []);
 
-        await expectRevertCustomError(
-          this.mock.$functionCallWithValue(this.target.address, abiEncodedCall, amount),
-          'AddressInsufficientBalance',
-          [this.mock.address],
+        await expectRevert(
+          this.mock.functionCallWithValue(this.contractRecipient.address, abiEncodedCall, amount),
+          'Address: insufficient balance for call',
         );
       });
 
       it('calls the requested function with existing value', async function () {
-        const abiEncodedCall = this.target.contract.methods.mockFunction().encodeABI();
+        const abiEncodedCall = web3.eth.abi.encodeFunctionCall({
+          name: 'mockFunction',
+          type: 'function',
+          inputs: [],
+        }, []);
 
-        const tracker = await balance.tracker(this.target.address);
+        const tracker = await balance.tracker(this.contractRecipient.address);
 
         await send.ether(other, this.mock.address, amount);
-
-        const receipt = await this.mock.$functionCallWithValue(this.target.address, abiEncodedCall, amount);
-        expectEvent(receipt, 'return$functionCallWithValue', {
-          ret0: web3.eth.abi.encodeParameters(['string'], ['0x1234']),
-        });
-        await expectEvent.inTransaction(receipt.tx, CallReceiverMock, 'MockFunctionCalled');
+        const receipt = await this.mock.functionCallWithValue(this.contractRecipient.address, abiEncodedCall, amount);
 
         expect(await tracker.delta()).to.be.bignumber.equal(amount);
+
+        expectEvent(receipt, 'CallReturnValue', { data: '0x1234' });
+        await expectEvent.inTransaction(receipt.tx, CallReceiverMock, 'MockFunctionCalled');
       });
 
       it('calls the requested function with transaction funds', async function () {
-        const abiEncodedCall = this.target.contract.methods.mockFunction().encodeABI();
+        const abiEncodedCall = web3.eth.abi.encodeFunctionCall({
+          name: 'mockFunction',
+          type: 'function',
+          inputs: [],
+        }, []);
 
-        const tracker = await balance.tracker(this.target.address);
+        const tracker = await balance.tracker(this.contractRecipient.address);
 
         expect(await balance.current(this.mock.address)).to.be.bignumber.equal('0');
-
-        const receipt = await this.mock.$functionCallWithValue(this.target.address, abiEncodedCall, amount, {
-          from: other,
-          value: amount,
-        });
-        expectEvent(receipt, 'return$functionCallWithValue', {
-          ret0: web3.eth.abi.encodeParameters(['string'], ['0x1234']),
-        });
-        await expectEvent.inTransaction(receipt.tx, CallReceiverMock, 'MockFunctionCalled');
+        const receipt = await this.mock.functionCallWithValue(
+          this.contractRecipient.address, abiEncodedCall, amount, { from: other, value: amount },
+        );
 
         expect(await tracker.delta()).to.be.bignumber.equal(amount);
+
+        expectEvent(receipt, 'CallReturnValue', { data: '0x1234' });
+        await expectEvent.inTransaction(receipt.tx, CallReceiverMock, 'MockFunctionCalled');
       });
 
       it('reverts when calling non-payable functions', async function () {
-        const abiEncodedCall = this.target.contract.methods.mockFunctionNonPayable().encodeABI();
+        const abiEncodedCall = web3.eth.abi.encodeFunctionCall({
+          name: 'mockFunctionNonPayable',
+          type: 'function',
+          inputs: [],
+        }, []);
 
         await send.ether(other, this.mock.address, amount);
-        await expectRevertCustomError(
-          this.mock.$functionCallWithValue(this.target.address, abiEncodedCall, amount),
-          'FailedInnerCall',
-          [],
+        await expectRevert(
+          this.mock.functionCallWithValue(this.contractRecipient.address, abiEncodedCall, amount),
+          'Address: low-level call with value failed',
         );
       });
     });
@@ -249,92 +279,104 @@ contract('Address', function (accounts) {
 
   describe('functionStaticCall', function () {
     beforeEach(async function () {
-      this.target = await CallReceiverMock.new();
+      this.contractRecipient = await CallReceiverMock.new();
     });
 
     it('calls the requested function', async function () {
-      const abiEncodedCall = this.target.contract.methods.mockStaticFunction().encodeABI();
+      const abiEncodedCall = web3.eth.abi.encodeFunctionCall({
+        name: 'mockStaticFunction',
+        type: 'function',
+        inputs: [],
+      }, []);
 
-      expect(await this.mock.$functionStaticCall(this.target.address, abiEncodedCall)).to.be.equal(
-        web3.eth.abi.encodeParameters(['string'], ['0x1234']),
-      );
+      const receipt = await this.mock.functionStaticCall(this.contractRecipient.address, abiEncodedCall);
+
+      expectEvent(receipt, 'CallReturnValue', { data: '0x1234' });
     });
 
     it('reverts on a non-static function', async function () {
-      const abiEncodedCall = this.target.contract.methods.mockFunction().encodeABI();
+      const abiEncodedCall = web3.eth.abi.encodeFunctionCall({
+        name: 'mockFunction',
+        type: 'function',
+        inputs: [],
+      }, []);
 
-      await expectRevertCustomError(
-        this.mock.$functionStaticCall(this.target.address, abiEncodedCall),
-        'FailedInnerCall',
-        [],
+      await expectRevert(
+        this.mock.functionStaticCall(this.contractRecipient.address, abiEncodedCall),
+        'Address: low-level static call failed',
       );
     });
 
     it('bubbles up revert reason', async function () {
-      const abiEncodedCall = this.target.contract.methods.mockFunctionRevertsReason().encodeABI();
+      const abiEncodedCall = web3.eth.abi.encodeFunctionCall({
+        name: 'mockFunctionRevertsReason',
+        type: 'function',
+        inputs: [],
+      }, []);
 
       await expectRevert(
-        this.mock.$functionStaticCall(this.target.address, abiEncodedCall),
+        this.mock.functionStaticCall(this.contractRecipient.address, abiEncodedCall),
         'CallReceiverMock: reverting',
       );
     });
 
     it('reverts when address is not a contract', async function () {
-      const [recipient] = accounts;
-      const abiEncodedCall = this.target.contract.methods.mockFunction().encodeABI();
-
-      await expectRevertCustomError(this.mock.$functionStaticCall(recipient, abiEncodedCall), 'AddressEmptyCode', [
-        recipient,
-      ]);
+      const [ recipient ] = accounts;
+      const abiEncodedCall = web3.eth.abi.encodeFunctionCall({
+        name: 'mockFunction',
+        type: 'function',
+        inputs: [],
+      }, []);
+      await expectRevert(
+        this.mock.functionStaticCall(recipient, abiEncodedCall),
+        'Address: call to non-contract',
+      );
     });
   });
 
   describe('functionDelegateCall', function () {
     beforeEach(async function () {
-      this.target = await CallReceiverMock.new();
+      this.contractRecipient = await CallReceiverMock.new();
     });
 
     it('delegate calls the requested function', async function () {
-      // pseudorandom values
-      const slot = '0x93e4c53af435ddf777c3de84bb9a953a777788500e229a468ea1036496ab66a0';
-      const value = '0x6a465d1c49869f71fb65562bcbd7e08c8044074927f0297127203f2a9924ff5b';
+      const abiEncodedCall = web3.eth.abi.encodeFunctionCall({
+        name: 'mockFunctionWritesStorage',
+        type: 'function',
+        inputs: [],
+      }, []);
 
-      const abiEncodedCall = this.target.contract.methods.mockFunctionWritesStorage(slot, value).encodeABI();
+      const receipt = await this.mock.functionDelegateCall(this.contractRecipient.address, abiEncodedCall);
 
-      expect(await web3.eth.getStorageAt(this.mock.address, slot)).to.be.equal(constants.ZERO_BYTES32);
+      expectEvent(receipt, 'CallReturnValue', { data: '0x1234' });
 
-      expectEvent(
-        await this.mock.$functionDelegateCall(this.target.address, abiEncodedCall),
-        'return$functionDelegateCall',
-        { ret0: web3.eth.abi.encodeParameters(['string'], ['0x1234']) },
-      );
-
-      expect(await web3.eth.getStorageAt(this.mock.address, slot)).to.be.equal(value);
+      expect(await this.mock.sharedAnswer()).to.equal('42');
     });
 
     it('bubbles up revert reason', async function () {
-      const abiEncodedCall = this.target.contract.methods.mockFunctionRevertsReason().encodeABI();
+      const abiEncodedCall = web3.eth.abi.encodeFunctionCall({
+        name: 'mockFunctionRevertsReason',
+        type: 'function',
+        inputs: [],
+      }, []);
 
       await expectRevert(
-        this.mock.$functionDelegateCall(this.target.address, abiEncodedCall),
+        this.mock.functionDelegateCall(this.contractRecipient.address, abiEncodedCall),
         'CallReceiverMock: reverting',
       );
     });
 
     it('reverts when address is not a contract', async function () {
-      const [recipient] = accounts;
-      const abiEncodedCall = this.target.contract.methods.mockFunction().encodeABI();
-
-      await expectRevertCustomError(this.mock.$functionDelegateCall(recipient, abiEncodedCall), 'AddressEmptyCode', [
-        recipient,
-      ]);
-    });
-  });
-
-  describe('verifyCallResult', function () {
-    it('returns returndata on success', async function () {
-      const returndata = '0x123abc';
-      expect(await this.mock.$verifyCallResult(true, returndata)).to.equal(returndata);
+      const [ recipient ] = accounts;
+      const abiEncodedCall = web3.eth.abi.encodeFunctionCall({
+        name: 'mockFunction',
+        type: 'function',
+        inputs: [],
+      }, []);
+      await expectRevert(
+        this.mock.functionDelegateCall(recipient, abiEncodedCall),
+        'Address: call to non-contract',
+      );
     });
   });
 });
