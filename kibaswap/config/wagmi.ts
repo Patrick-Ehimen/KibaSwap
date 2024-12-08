@@ -42,12 +42,14 @@ const wallets = [
   },
 ];
 
+const id = "a07d3fd03a42be9708dadd3ac613a55e";
+
 // Exporting the configuration for Wagmi
 export const config = getDefaultConfig({
   // Setting the application name
   appName: "KibaSwap",
   // Setting the project ID from environment variables
-  projectId: process.env.NEXT_PUBLIC_PROJECT_ID as string,
+  projectId: id,
   // Defining the blockchain networks to support
   chains: [
     mainnet,
