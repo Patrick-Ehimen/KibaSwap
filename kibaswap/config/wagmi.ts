@@ -43,6 +43,10 @@ const wallets = [
 ];
 
 const id = "a07d3fd03a42be9708dadd3ac613a55e";
+console.log(
+  "NEXT_PUBLIC_ENABLE_TESTNETS",
+  process.env.NEXT_PUBLIC_ENABLE_TESTNETS
+);
 
 // Exporting the configuration for Wagmi
 export const config = getDefaultConfig({
@@ -59,10 +63,12 @@ export const config = getDefaultConfig({
     base,
     bsc,
     avalanche,
+    sepolia,
+    avalancheFuji,
     // Conditionally adding Sepolia network if testnets are enabled
-    ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === "true"
-      ? [sepolia, avalancheFuji]
-      : []),
+    // ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === "true"
+    //   ? [sepolia, avalancheFuji]
+    //   : []),
   ],
   // Enabling server-side rendering
   ssr: true,
