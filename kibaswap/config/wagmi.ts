@@ -47,7 +47,7 @@ export const config = getDefaultConfig({
   // Setting the application name
   appName: "KibaSwap",
   // Setting the project ID from environment variables
-  projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_ID as string,
+  projectId: process.env.NEXT_PUBLIC_PROJECT_ID as string,
   // Defining the blockchain networks to support
   chains: [
     mainnet,
