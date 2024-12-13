@@ -25,12 +25,14 @@ export default function TokenSelect({
   const [open, setOpen] = useState(false);
   const closeDialogRef = useRef<() => void>();
 
+  // Filter tokens based on search query, considering both name and symbol
   const filteredTokens = tokens.filter(
     (token) =>
       token.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       token.symbol.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Separate filtered tokens into pinned and unpinned categories
   const pinnedTokens = filteredTokens.filter((token) => token.pinned);
   const unpinnedTokens = filteredTokens.filter((token) => !token.pinned);
 
