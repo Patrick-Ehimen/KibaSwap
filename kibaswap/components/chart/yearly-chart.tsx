@@ -150,7 +150,7 @@ export default function YearlyChart({ token }: DailyChartProps) {
             !error && (
               <ChartContainer
                 config={chartConfig}
-                className="h-[300px] w-[600px]"
+                className="h-[300px] w-[300px] md:w-[600px]"
               >
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart
